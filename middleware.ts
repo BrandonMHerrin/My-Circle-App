@@ -1,33 +1,20 @@
-import { cookies } from "next/headers";
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest } from "next/server";
+import { updateSession } from "./src/lib/supabase/proxy";
 
-const protectedRoutes = ["placeholder"];
-const publicRoutes = ['/authentication', '/', '/dashboard'];
-
-export async function middleware(req: NextRequest) {
-
-    const path = req.nextUrl.pathname;
-    const isPublicRoute = publicRoutes.includes(path);
-    const isProtectedRoute = protectedRoutes.includes(path);
-
-    // Check if the user is trying to access a protected route (e.g., /dashboard)
-
-    const session = (await cookies()).get("session")?.value
-    const token = req.cookies.get('auth_token'); // Retrieve the auth token from cookies
-
-    // If no token is found, redirect to the login page
-    if (isProtectedRoute && !session) {
-        return NextResponse.redirect(new URL('/login', req.nextUrl));
-    }
-
-    if (isProtectedRoute && session && !req.nextUrl.pathname.startsWith('/dashboard')) {
-        return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
-    }
-
-    return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  // Update user's auth session
+  return await updateSession(request);
 }
 
-// Routes Proxy should not run on
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 }
