@@ -1,5 +1,6 @@
 "use client";
 
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import * as React from "react";
 
@@ -22,6 +23,29 @@ export default function LoginForm({
       setIsLoading(false);
     }, 3000);
   }
+
+  const signInGoogle = async () => {
+    try {
+      console.log("Sign in with Google clicked");
+      setIsLoading(true);
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      if (error) {
+        console.error('Error signing in with Google.');
+      }
+      console.log("Redirecting to Google for authentication...");
+    } catch (error) {
+      console.error('Unexpected error: ', error);
+    } finally {
+      setIsLoading(false);
+      console.log("Finished sign in with Google process");
+    }
+  }  
 
   return (
     <>
@@ -58,6 +82,15 @@ export default function LoginForm({
           {isLoading ? "Signing in..." : "Sign in"}
         </button>
       </form>
+
+      <button
+        onClick={signInGoogle}
+        disabled={isLoading}
+        type="button"
+        className="w-full mt-4 py-2 bg-white text-gray-800 border border-gray-300 hover:bg-gray-50 rounded-md flex items-center justify-center gap-2"
+      >
+        {isLoading ? "Connecting..." : "Continue with Google"}
+      </button>
 
       <div className="mt-3 text-sm text-gray-700">
         Don&apos;t have an account?{" "}
