@@ -1,90 +1,175 @@
+// UI components from shadcn for consistent design across the app
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+// Icons used for visual clarity in dashboard elements
+import { Users, Activity, Bell, Plus } from "lucide-react";
+
+/**
+ * DashboardPage
+ * Main landing page after user authentication.
+ * Provides a high-level overview of contacts, interactions, and reminders.
+ */
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-zinc-100 p-6">
-      <div className="mx-auto max-w-6xl space-y-8">
-        
-        {/* Header */}
+    // Full-height container using global background color
+    <div className="min-h-screen bg-background">
+      {/* Centered content container with max width */}
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-6">
+
+        {/* ===== HEADER SECTION ===== */}
+        {/* Displays page title and user context */}
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+            <h1 className="text-3xl font-semibold tracking-tight">
               Dashboard
             </h1>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted-foreground">
               Overview of your contacts and interactions
             </p>
           </div>
 
+          {/* User quick info and logout action */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-zinc-600">Welcome, User</span>
-            <button className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50">
+            <span className="text-sm text-muted-foreground">
+              Welcome, User
+            </span>
+            <Button variant="outline" size="sm">
               Logout
-            </button>
+            </Button>
           </div>
         </header>
 
-        {/* Stats */}
+        {/* ===== STATS / INSIGHTS SECTION (MY-21) ===== */}
+        {/* High-level metrics to provide meaningful insights */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-            <p className="text-sm text-zinc-500">Total Contacts</p>
-            <p className="mt-2 text-3xl font-semibold text-zinc-900">12</p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-            <p className="text-sm text-zinc-500">Recent Interactions</p>
-            <p className="mt-2 text-3xl font-semibold text-zinc-900">5</p>
-          </div>
-
-          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-            <p className="text-sm text-zinc-500">Upcoming Reminders</p>
-            <p className="mt-2 text-3xl font-semibold text-zinc-900">3</p>
-          </div>
-        </section>
-
-        {/* Main Content */}
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           
-          {/* Activity */}
-          <div className="lg:col-span-2 rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-            <h2 className="mb-4 text-lg font-medium text-zinc-900">
-              Recent Activity
-            </h2>
+          {/* Total Contacts */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Contacts
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">12</div>
+            </CardContent>
+          </Card>
 
-            <ul className="divide-y divide-zinc-100 text-sm">
-              <li className="flex items-center justify-between py-3">
-                <span className="text-zinc-700">Called John Doe</span>
-                <span className="text-zinc-400">2 days ago</span>
-              </li>
-              <li className="flex items-center justify-between py-3">
-                <span className="text-zinc-700">Met with Jane Smith</span>
-                <span className="text-zinc-400">4 days ago</span>
-              </li>
-              <li className="flex items-center justify-between py-3">
-                <span className="text-zinc-700">Sent follow-up email</span>
-                <span className="text-zinc-400">1 week ago</span>
-              </li>
-            </ul>
-          </div>
+          {/* Recent Interactions */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Recent Interactions
+              </CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">5</div>
+            </CardContent>
+          </Card>
 
-          {/* Quick Actions */}
-          <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-zinc-200">
-            <h2 className="mb-4 text-lg font-medium text-zinc-900">
-              Quick Actions
-            </h2>
-
-            <div className="flex flex-col gap-3">
-              <button className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                Log Interaction
-              </button>
-
-              <button className="rounded-md border border-zinc-300 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100">
-                Add Contact
-              </button>
-            </div>
-          </div>
-
+          {/* Upcoming Reminders */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Upcoming Reminders
+              </CardTitle>
+              <Bell className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">3</div>
+            </CardContent>
+          </Card>
         </section>
 
+        {/* ===== MAIN CONTENT SECTION ===== */}
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+          {/* Recent Activity Feed (MY-22) */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Recent Activity</CardTitle>
+              <Button size="sm" variant="outline" className="gap-2">
+                <Plus className="h-4 w-4" />
+                New Interaction
+              </Button>
+            </CardHeader>
+
+            <CardContent className="space-y-3">
+              <ActivityItem
+                text="Called John Doe"
+                time="2 days ago"
+                type="Call"
+              />
+              <ActivityItem
+                text="Met with Jane Smith"
+                time="4 days ago"
+                type="Meeting"
+              />
+              <ActivityItem
+                text="Sent follow-up email"
+                time="1 week ago"
+                type="Email"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions (MY-12 Navigation Support) */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <Button className="justify-start gap-2">
+                <Activity className="h-4 w-4" />
+                Log Interaction
+              </Button>
+              <Button variant="secondary" className="justify-start gap-2">
+                <Users className="h-4 w-4" />
+                Add Contact
+              </Button>
+            </CardContent>
+          </Card>
+
+        </section>
       </div>
+    </div>
+  );
+}
+
+/**
+ * ActivityItem
+ * Reusable component for displaying a single interaction in the activity feed.
+ */
+function ActivityItem({
+  text,
+  time,
+  type,
+}: {
+  text: string;
+  time: string;
+  type: string;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border p-3">
+      <div>
+        <div className="flex items-center gap-2">
+          <p className="font-medium">{text}</p>
+          <Badge variant="secondary">{type}</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">{time}</p>
+      </div>
+      <Button size="sm" variant="ghost">
+        View
+      </Button>
     </div>
   );
 }
