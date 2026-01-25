@@ -18,9 +18,9 @@ export default function Layout ({children}: {children: React.ReactNode}) {
               <hr className='mt-4'></hr>
               
               <div className="mt-3 text-left text-gray-700 w-full flex flex-col gap-2">
-                <Link href="/login/google" className="border border-solid border-gray-300 rounded-md shadow-sm p-2 w-full text-center hover:bg-gray-100">
+                <button className="border border-solid border-gray-300 rounded-md shadow-sm p-2 w-full text-center hover:bg-gray-100">
                   <FcGoogle className='inline text-2xl w-auto '/> Google
-                </Link>
+                </button>
                 <Link href="/login/github" className="border border-solid border-gray-300 rounded-md shadow-sm p-2 w-full text-center hover:bg-gray-100">
                   <FaGithub className='inline text-2xl w-auto '/> GitHub
                 </Link>
