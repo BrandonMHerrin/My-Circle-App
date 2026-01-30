@@ -1,9 +1,16 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "./src/lib/supabase/proxy";
+import { isPublicRoute } from "@/app/auth/routes";
+import { getSession } from "@/app/auth/session";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  // Update user's auth session
-  return await updateSession(request);
+  const { user, response } = await getSession(request);
+  const pathname = request.nextUrl.pathname;
+
+  if (!user && !isPublicRoute(pathname)) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
+  }
+
+  return response;
 }
 
 export const config = {
