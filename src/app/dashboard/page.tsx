@@ -1,3 +1,5 @@
+"use client";
+
 // UI components from shadcn for consistent design across the app
 import {
   Card,
@@ -7,9 +9,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
-// Icons used for visual clarity in dashboard elements
+import { PageHeader } from "@/components/PageHeader";
 import { Users, Activity, Bell, Plus } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect, useState } from "react";
 
 /**
  * DashboardPage
@@ -17,39 +22,50 @@ import { Users, Activity, Bell, Plus } from "lucide-react";
  * Provides a high-level overview of contacts, interactions, and reminders.
  */
 export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth();
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [loadingContacts, setLoadingContacts] = useState(true);
+
+  useEffect(() => {
+    async function fetchContacts() {
+      if (!user) return;
+      try {
+        const res = await fetch("/api/contacts");
+        if (res.ok) {
+          const data = await res.json();
+          setContacts(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch contacts:", error);
+      } finally {
+        setLoadingContacts(false);
+      }
+    }
+
+    if (!authLoading && user) {
+      fetchContacts();
+    }
+  }, [user, authLoading]);
+
+  if (authLoading) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
+
   return (
     // Full-height container using global background color
     <div className="min-h-screen bg-background">
       {/* Centered content container with max width */}
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-6">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-8">
 
-        {/* ===== HEADER SECTION ===== */}
-        {/* Displays page title and user context */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Dashboard
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Overview of your contacts and interactions
-            </p>
-          </div>
-
-          {/* User quick info and logout action */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              Welcome, User
-            </span>
-            <Button variant="outline" size="sm">
-              Logout
-            </Button>
-          </div>
-        </header>
+        <PageHeader
+          title="Dashboard"
+          description="Overview of your contacts and interactions"
+        />
 
         {/* ===== STATS / INSIGHTS SECTION (MY-21) ===== */}
         {/* High-level metrics to provide meaningful insights */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          
+
           {/* Total Contacts */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -59,7 +75,9 @@ export default function DashboardPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">12</div>
+              <div className="text-3xl font-semibold">
+                {loadingContacts ? "..." : contacts.length}
+              </div>
             </CardContent>
           </Card>
 
@@ -72,7 +90,7 @@ export default function DashboardPage() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">5</div>
+              <div className="text-3xl font-semibold">0</div>
             </CardContent>
           </Card>
 
@@ -85,7 +103,7 @@ export default function DashboardPage() {
               <Bell className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">3</div>
+              <div className="text-3xl font-semibold">0</div>
             </CardContent>
           </Card>
         </section>
@@ -96,29 +114,31 @@ export default function DashboardPage() {
           {/* Recent Activity Feed (MY-22) */}
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Recent Activity</CardTitle>
-              <Button size="sm" variant="outline" className="gap-2">
-                <Plus className="h-4 w-4" />
-                New Interaction
+              <CardTitle>Recent Contacts</CardTitle>
+              <Button size="sm" variant="outline" className="gap-2" asChild>
+                <Link href="/contacts/new">
+                  <Plus className="h-4 w-4" />
+                  New Contact
+                </Link>
               </Button>
             </CardHeader>
 
             <CardContent className="space-y-3">
-              <ActivityItem
-                text="Called John Doe"
-                time="2 days ago"
-                type="Call"
-              />
-              <ActivityItem
-                text="Met with Jane Smith"
-                time="4 days ago"
-                type="Meeting"
-              />
-              <ActivityItem
-                text="Sent follow-up email"
-                time="1 week ago"
-                type="Email"
-              />
+              {loadingContacts ? (
+                <p className="text-sm text-muted-foreground">Loading contacts...</p>
+              ) : contacts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">No contacts yet. Start by adding one!</p>
+              ) : (
+                contacts.slice(0, 3).map((contact) => (
+                  <ActivityItem
+                    key={contact.id}
+                    id={contact.id}
+                    text={`${contact.fname} ${contact.lname}`}
+                    time={new Date(contact.created_at).toLocaleDateString()}
+                    type={contact.relationship}
+                  />
+                ))
+              )}
             </CardContent>
           </Card>
 
@@ -132,9 +152,9 @@ export default function DashboardPage() {
                 <Activity className="h-4 w-4" />
                 Log Interaction
               </Button>
-              <Button variant="secondary" className="justify-start gap-2">
-                <Users className="h-4 w-4" />
-                Add Contact
+              <Button variant="secondary" className="justify-start gap-2" asChild>
+
+                <Link href="/contacts/new">Add Contact <Users className="h-4 w-4" /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -150,10 +170,12 @@ export default function DashboardPage() {
  * Reusable component for displaying a single interaction in the activity feed.
  */
 function ActivityItem({
+  id,
   text,
   time,
   type,
 }: {
+  id: string;
   text: string;
   time: string;
   type: string;
@@ -167,8 +189,8 @@ function ActivityItem({
         </div>
         <p className="text-xs text-muted-foreground">{time}</p>
       </div>
-      <Button size="sm" variant="ghost">
-        View
+      <Button size="sm" variant="ghost" asChild>
+        <Link href={`/contacts/${id}/edit`}>View</Link>
       </Button>
     </div>
   );

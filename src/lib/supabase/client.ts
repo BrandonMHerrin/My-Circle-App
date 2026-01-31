@@ -1,6 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 
 export function createClient() {
+  console.log("[lib/supabase/client] Creating browser client");
   // Create a supabase client on the browser with project's credentials
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
