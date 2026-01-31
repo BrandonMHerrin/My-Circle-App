@@ -1,5 +1,5 @@
-import { isPublicRoute } from "@/app/auth/routes";
-import { getSession } from "@/app/auth/session";
+import { isPublicRoute } from "./src/app/auth/routes";
+import { getSession } from "./src/app/auth/session";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
