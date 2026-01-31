@@ -16,24 +16,17 @@ export default function LoginForm({
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = React.useState(false);
 
-  async function onSubmit(event: React.SyntheticEvent) {
-    event.preventDefault();
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
-  }
-
   const signInGoogle = async () => {
     try {
       console.log("Sign in with Google clicked");
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      console.log("Redirect URL: ", redirectTo);
       setIsLoading(true);
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: redirectTo
         }
       });
       if (error) {
@@ -51,7 +44,7 @@ export default function LoginForm({
   return (
     <>
       <h2 className="text-2xl font-bold text-center text-gray-800">
-        Sign in to your google account
+        Sign in to your Google account
       </h2>
 
       <button
