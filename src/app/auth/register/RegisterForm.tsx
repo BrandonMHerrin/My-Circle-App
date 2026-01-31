@@ -4,6 +4,35 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// shadcn/ui components
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+
+const registerSchema = z.object({
+    fname: z.string().min(1, "First name is required"),
+    lname: z.string().min(1, "Last name is required"),
+    email: z.string().email("Invalid email address"),
+    dob: z.string().min(1, "Date of birth is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+});
+
+type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm({
     ...props
@@ -12,36 +41,33 @@ export default function RegisterForm({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    async function onSubmit(event: React.SyntheticEvent) {
-        event.preventDefault();
+    const form = useForm<RegisterValues>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: {
+            fname: "",
+            lname: "",
+            email: "",
+            dob: "",
+            password: "",
+            confirmPassword: "",
+        },
+    });
+
+    async function onSubmit(values: RegisterValues) {
         setIsLoading(true);
         setError(null);
-
-        const formData = new FormData(event.currentTarget as HTMLFormElement);
-        const fname = formData.get("fname") as string;
-        const lname = formData.get("lname") as string;
-        const email = formData.get("email") as string;
-        const dob = formData.get("dob") as string;
-        const password = formData.get("password") as string;
-        const confirmPassword = formData.get("confirmPassword") as string;
-
-        if (password !== confirmPassword) {
-            setError("Passwords do not match.");
-            setIsLoading(false);
-            return;
-        }
 
         try {
             const supabase = createClient();
 
             const { data, error: signUpError } = await supabase.auth.signUp({
-                email,
-                password,
+                email: values.email,
+                password: values.password,
                 options: {
                     data: {
-                        fname,
-                        lname,
-                        dob,
+                        fname: values.fname,
+                        lname: values.lname,
+                        dob: values.dob,
                     },
                 },
             });
@@ -54,7 +80,6 @@ export default function RegisterForm({
                 console.log("[RegisterForm] Registration successful, session found.");
                 router.push("/dashboard");
             } else {
-                // This might happen if email confirmation is required
                 console.log("[RegisterForm] Registration successful, check email.");
                 alert("Registration successful! Please check your email for confirmation.");
                 router.push("/auth/login");
@@ -69,139 +94,114 @@ export default function RegisterForm({
 
     return (
         <>
-            <h2 className="text-2xl font-bold text-center text-gray-800">
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                 Create your account
             </h2>
 
             {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md">
+                <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md">
                     {error}
                 </div>
             )}
 
-            <form
-                id="registerForm"
-                onSubmit={onSubmit}
-                className={props.className}
-                {...props}
-            >
-                <div className="space-y-4">
-                    <div className="space-y-4 mt-5">
-                        <div>
-                            <label
-                                htmlFor="fname"
-                                className="block text-sm font-medium text-gray-800"
-                            >
-                                First Name
-                            </label>
-                            <input
-                                id="fname"
-                                name="fname"
-                                type="text"
-                                autoComplete="fname"
-                                placeholder="John"
-                                required
-                                className="mt-1 p-2 text-gray-800 block w-full border border-solid border-gray-400 rounded-md shadow-sm focus:border-black outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="lname"
-                                className="block text-sm font-medium text-gray-800"
-                            >
-                                Last Name
-                            </label>
-                            <input
-                                id="lname"
-                                name="lname"
-                                type="text"
-                                autoComplete="lname"
-                                placeholder="Doe"
-                                required
-                                className="mt-1 p-2 text-gray-800 block w-full border border-solid border-gray-400 rounded-md shadow-sm focus:border-black outline-none"
-                            />
-                        </div>
-                    </div>
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                >
+                    <FormField
+                        control={form.control}
+                        name="fname"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>First Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="John" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                    <div>
-                        <label
-                            htmlFor="email"
-                            className="block text-sm font-medium text-gray-800"
-                        >
-                            Email address
-                        </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            placeholder="your@mail.com"
-                            required
-                            className="mt-1 p-2 text-gray-800 block w-full border border-solid border-gray-400 rounded-md shadow-sm focus:border-black outline-none"
-                        />
-                    </div>
+                    <FormField
+                        control={form.control}
+                        name="lname"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Last Name</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Doe" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                    <div>
-                        <label
-                            htmlFor="dob"
-                            className="block text-sm font-medium text-gray-800"
-                        >
-                            Date of Birth
-                        </label>
-                        <input
-                            id="dob"
-                            name="dob"
-                            type="date"
-                            autoComplete="dob"
-                            required
-                            className="mt-1 p-2 text-gray-800 block w-full border border-solid border-gray-400 rounded-md shadow-sm focus:border-black outline-none"
-                        />
-                    </div>
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email Address</FormLabel>
+                                <FormControl>
+                                    <Input type="email" placeholder="your@mail.com" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                    <div className="space-y-4">
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-800"
-                            >
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                className="mt-1 p-2 text-gray-800 block w-full border border-solid border-gray-400 rounded-md shadow-sm focus:border-black outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                htmlFor="confirmPassword"
-                                className="block text-sm font-medium text-gray-800"
-                            >
-                                Confirm Password
-                            </label>
-                            <input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                type="password"
-                                required
-                                className="mt-1 p-2 text-gray-800 block w-full border border-solid border-gray-400 rounded-md shadow-sm focus:border-black outline-none"
-                            />
-                        </div>
-                    </div>
-                </div>
+                    <FormField
+                        control={form.control}
+                        name="dob"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Date of Birth</FormLabel>
+                                <FormControl>
+                                    <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <div>
-                    <button
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                    <Input type="password" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Confirm Password</FormLabel>
+                                <FormControl>
+                                    <Input type="password" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full mt-6 py-2 bg-gray-600 text-white hover:bg-gray-700 rounded-md font-medium disabled:opacity-50 transition-colors"
+                        className="w-full mt-2"
                     >
                         {isLoading ? "Registering..." : "Manage Your Circle"}
-                    </button>
-                </div>
-            </form>
+                    </Button>
+                </form>
+            </Form>
         </>
     );
 }

@@ -1,15 +1,16 @@
 "use client";
 
-import { contactSchema } from "@/lib/validation/contact";
+import { contactSchema, type ContactFormData } from "@/lib/validation/contact";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2, UserPlus, Save } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // shadcn/ui components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
@@ -26,6 +27,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 export default function ContactForm({
   initialData,
@@ -36,24 +46,25 @@ export default function ContactForm({
 }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-
-  const [form, setForm] = useState({
-    fname: initialData?.fname ?? "",
-    lname: initialData?.lname ?? "",
-    email: initialData?.email ?? "",
-    phone: initialData?.phone ?? "",
-    relationship: initialData?.relationship ?? "",
-    dob: initialData?.dob ?? "",
-    notes: initialData?.notes ?? "",
-  });
-
-  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  // Sync state if initialData arrives after mount (though usually handles via server component)
+  const form = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      fname: initialData?.fname ?? "",
+      lname: initialData?.lname ?? "",
+      email: initialData?.email ?? "",
+      phone: initialData?.phone ?? "",
+      relationship: initialData?.relationship ?? "",
+      dob: initialData?.dob ?? "",
+      notes: initialData?.notes ?? "",
+    },
+  });
+
+  // Sync form if initialData arrives after mount
   useEffect(() => {
     if (initialData) {
-      setForm({
+      form.reset({
         fname: initialData.fname ?? "",
         lname: initialData.lname ?? "",
         email: initialData.email ?? "",
@@ -63,38 +74,15 @@ export default function ContactForm({
         notes: initialData.notes ?? "",
       });
     }
-  }, [initialData]);
+  }, [initialData, form]);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
-
-  function handleSelectChange(value: string) {
-    setForm((prev) => ({ ...prev, relationship: value }));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
+  async function onSubmit(data: ContactFormData) {
     if (!user) {
       alert("You must be logged in to save contacts.");
       return;
     }
 
-    setErrors({});
     setSubmitting(true);
-
-    // Validate form
-    const parsed = contactSchema.safeParse(form);
-
-    if (!parsed.success) {
-      setErrors(parsed.error.flatten().fieldErrors);
-      setSubmitting(false);
-      return;
-    }
 
     try {
       const url = contactId ? `/api/contacts/${contactId}` : "/api/contacts";
@@ -104,7 +92,7 @@ export default function ContactForm({
 
       const res = await fetch(url, {
         method,
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
         },
@@ -170,158 +158,155 @@ export default function ContactForm({
         </CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* First Name */}
-            <div className="space-y-2">
-              <Label htmlFor="fname" className={errors.fname ? "text-destructive" : ""}>
-                First Name
-              </Label>
-              <Input
-                id="fname"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* First Name */}
+              <FormField
+                control={form.control}
                 name="fname"
-                value={form.fname}
-                onChange={handleChange}
-                placeholder="John"
-                aria-invalid={!!errors.fname}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.fname && (
-                <p className="text-xs font-medium text-destructive">{errors.fname[0]}</p>
-              )}
-            </div>
 
-            {/* Last Name */}
-            <div className="space-y-2">
-              <Label htmlFor="lname" className={errors.lname ? "text-destructive" : ""}>
-                Last Name
-              </Label>
-              <Input
-                id="lname"
+              {/* Last Name */}
+              <FormField
+                control={form.control}
                 name="lname"
-                value={form.lname}
-                onChange={handleChange}
-                placeholder="Doe"
-                aria-invalid={!!errors.lname}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.lname && (
-                <p className="text-xs font-medium text-destructive">{errors.lname[0]}</p>
-              )}
-            </div>
 
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className={errors.email ? "text-destructive" : ""}>
-                Email Address
-              </Label>
-              <Input
-                id="email"
+              {/* Email */}
+              <FormField
+                control={form.control}
                 name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="john.doe@example.com"
-                aria-invalid={!!errors.email}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="john.doe@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.email && (
-                <p className="text-xs font-medium text-destructive">{errors.email[0]}</p>
-              )}
-            </div>
 
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
+              {/* Phone */}
+              <FormField
+                control={form.control}
                 name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="+1 (555) 000-0000"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="+1 (555) 000-0000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.phone && (
-                <p className="text-xs font-medium text-destructive">{errors.phone[0]}</p>
-              )}
-            </div>
 
-            {/* Relationship */}
-            <div className="space-y-2 flex flex-col">
-              <Label htmlFor="relationship" className={errors.relationship ? "text-destructive" : ""}>
-                Relationship
-              </Label>
-              <Select value={form.relationship} onValueChange={handleSelectChange}>
-                <SelectTrigger id="relationship">
-                  <SelectValue placeholder="Select relationship" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="friend">Friend</SelectItem>
-                  <SelectItem value="family">Family</SelectItem>
-                  <SelectItem value="work">Work</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.relationship && (
-                <p className="text-xs font-medium text-destructive">
-                  {errors.relationship[0]}
-                </p>
-              )}
-            </div>
+              {/* Relationship */}
+              <FormField
+                control={form.control}
+                name="relationship"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Relationship</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select relationship" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="friend">Friend</SelectItem>
+                        <SelectItem value="family">Family</SelectItem>
+                        <SelectItem value="work">Work</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* DOB */}
-            <div className="space-y-2">
-              <Label htmlFor="dob">Date of Birth</Label>
-              <Input
-                id="dob"
+              {/* DOB */}
+              <FormField
+                control={form.control}
                 name="dob"
-                type="date"
-                value={form.dob}
-                onChange={handleChange}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date of Birth</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              {errors.dob && (
-                <p className="text-xs font-medium text-destructive">{errors.dob[0]}</p>
-              )}
             </div>
-          </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Personal Notes</Label>
-            <Textarea
-              id="notes"
+            {/* Notes */}
+            <FormField
+              control={form.control}
               name="notes"
-              value={form.notes}
-              onChange={handleChange}
-              placeholder="How did you meet? Important facts..."
-              className="resize-none"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Personal Notes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="How did you meet? Important facts..."
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.notes && (
-              <p className="text-xs font-medium text-destructive">{errors.notes[0]}</p>
-            )}
-          </div>
-        </CardContent>
+          </CardContent>
 
-        <CardFooter className="flex justify-between border-t p-6 bg-muted/30">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => router.back()}
-            disabled={submitting}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={submitting} className="min-w-32">
-            {submitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : contactId ? (
-              "Save Changes"
-            ) : (
-              "Create Contact"
-            )}
-          </Button>
-        </CardFooter>
-      </form>
+          <CardFooter className="flex justify-between border-t p-6 bg-muted/30">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.back()}
+              disabled={submitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting} className="min-w-32">
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : contactId ? (
+                "Save Changes"
+              ) : (
+                "Create Contact"
+              )}
+            </Button>
+          </CardFooter>
+        </form>
+      </Form>
     </Card>
   );
 }
