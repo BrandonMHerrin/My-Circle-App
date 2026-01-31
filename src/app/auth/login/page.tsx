@@ -4,6 +4,7 @@ import LoginForm from "./LoginForm";
 
 export const metadata: Metadata = {
   title: 'Login - My Circle',
+  description: 'Authenticate to access your My Circle account and build meaningful circles.'
 }
 
 export default function LoginPage() {

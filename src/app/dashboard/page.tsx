@@ -17,6 +17,7 @@ import { Users, Activity, Bell, Plus } from "lucide-react";
  * Provides a high-level overview of contacts, interactions, and reminders.
  */
 export default function DashboardPage() {
+  
   return (
     // Full-height container using global background color
     <div className="min-h-screen bg-background">
