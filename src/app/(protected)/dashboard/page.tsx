@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Activity, Bell, Plus } from "lucide-react";
 import Header from "@/components/header";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * DashboardPage
@@ -14,6 +15,16 @@ import Link from "next/link";
  * Provides a high-level overview of contacts, interactions, and reminders.
  */
 export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  // Fetch necessary data for dashboard metrics (placeholders for now)
+  const { count, error } = await supabase
+    .from("contacts")
+    .select("*", { count: "exact", head: true });
+
+  if (error) {
+    throw new Error("Failed to load dashboard data");
+  }
   return (
     <>
       <Header title="Dashboard" subtitle="Overview of your contacts and interactions" />
@@ -30,7 +41,7 @@ export default async function DashboardPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">12</div>
+              <div className="text-3xl font-semibold">{count ?? 0}</div>
             </CardContent>
           </Card>
         </Link>
