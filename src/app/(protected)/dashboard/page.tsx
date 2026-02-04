@@ -10,43 +10,19 @@ import { Badge } from "@/components/ui/badge";
 
 // Icons used for visual clarity in dashboard elements
 import { Users, Activity, Bell, Plus } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import Header from "@/components/header";
 
 /**
  * DashboardPage
  * Main landing page after user authentication.
  * Provides a high-level overview of contacts, interactions, and reminders.
  */
-export default function DashboardPage() {
+export default async function DashboardPage() {
   
   return (
-    // Full-height container using global background color
-    <div className="min-h-screen bg-background">
-      {/* Centered content container with max width */}
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-6">
-
-        {/* ===== HEADER SECTION ===== */}
-        {/* Displays page title and user context */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Dashboard
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Overview of your contacts and interactions
-            </p>
-          </div>
-
-          {/* User quick info and logout action */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              Welcome, User
-            </span>
-            <Button variant="outline" size="sm">
-              Logout
-            </Button>
-          </div>
-        </header>
-
+    <>
+        <Header title="Dashboard" />
         {/* ===== STATS / INSIGHTS SECTION (MY-21) ===== */}
         {/* High-level metrics to provide meaningful insights */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -141,8 +117,7 @@ export default function DashboardPage() {
           </Card>
 
         </section>
-      </div>
-    </div>
+    </>
   );
 }
 

@@ -4,8 +4,82 @@
 
 > "The only way to do great work is to love what you do." – Steve Jobs
 
-> “Man is affected not by events but by the view he takes of them.” — Seneca
+> "Man is affected not by events but by the view he takes of them." — Seneca
 
+---
+
+# Frontend Architecture
+
+## Authentication
+
+Authentication is handled via Supabase Auth with a React Context provider pattern.
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/app/providers/session-provider.tsx` | Auth context provider with user state and signOut method |
+| `src/components/user-menu.tsx` | Displays user name and logout button |
+| `src/app/(protected)/layout.tsx` | Layout wrapper for authenticated routes |
+
+### How It Works
+
+1. **Server-side**: The root layout fetches the user from Supabase and passes it to `SessionProvider` as `initialUser`
+2. **Client-side**: `SessionProvider` hydrates with the server user and subscribes to auth state changes
+3. **Components**: Use the `useAuth()` hook to access `user`, `loading`, and `signOut`
+
+```tsx
+// Accessing auth state in a component
+import { useAuth } from "@/app/providers/session-provider";
+
+function MyComponent() {
+  const { user, signOut } = useAuth();
+  return <button onClick={signOut}>Logout {user?.email}</button>;
+}
+```
+
+### Sign Out Flow
+
+1. User clicks logout in `UserMenu`
+2. `signOut()` is called from auth context
+3. Supabase session is cleared
+4. User state is set to null
+5. Router redirects to `/auth/login`
+
+---
+
+## Component Architecture
+
+### Header
+
+The `Header` component is a **reusable component**, not part of the layout. Each page imports and renders it with its own title.
+
+**Why?** The layout is for truly shared UI (side nav, footer). The header title varies per page, so pages compose it themselves.
+
+```
+src/
+  components/
+    header.tsx        ← Reusable, receives title as prop
+    user-menu.tsx     ← Auth-aware, uses useAuth hook
+  app/
+    (protected)/
+      layout.tsx      ← Shared structure (padding, auth protection)
+      dashboard/
+        page.tsx      ← Renders <Header title="Dashboard" />
+      contacts/
+        page.tsx      ← Renders <Header title="Contacts" />
+```
+
+### Component Responsibilities
+
+| Component | Server/Client | Responsibility |
+|-----------|---------------|----------------|
+| `Header` | Server | Display page title, render UserMenu |
+| `UserMenu` | Client | Show user name, handle logout |
+| `SessionProvider` | Client | Manage auth state, provide context |
+| Protected Layout | Server | Shared structure, wraps with providers |
+
+---
 
 # API
 
