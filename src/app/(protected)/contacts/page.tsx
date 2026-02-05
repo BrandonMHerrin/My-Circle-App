@@ -1,8 +1,10 @@
+import { ContactCard } from "@/components/contact-card";
+import { ContactList } from "@/components/contact-list";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
-import { Plus } from "lucide-react";
+import { Contact, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function ContactsPage() {
@@ -33,15 +35,7 @@ export default async function ContactsPage() {
         {contactList.length === 0 ? (
           <p className="text-muted-foreground">No contacts found. Start by adding a new contact!</p>
         ) : (
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {contactList.map((contact) => (
-              <Card key={contact.id} className="p-4">
-                <h2 className="text-lg font-semibold">{contact.name}</h2>
-                <p className="text-sm text-muted-foreground">{contact.email}</p>
-                <p className="text-sm text-muted-foreground">{contact.phone}</p>
-              </Card>
-            ))}
-          </section>
+          <ContactList contacts={contactList} />
         )}
     </>
   );
