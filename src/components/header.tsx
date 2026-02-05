@@ -22,7 +22,7 @@ import { UserMenu } from "./user-menu";
  *   );
  * }
  */
-export default function Header({ title }: { title: string }) {
+export default function Header({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <>
       {/* ===== HEADER SECTION ===== */}
@@ -30,9 +30,11 @@ export default function Header({ title }: { title: string }) {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-          <p className="text-sm text-muted-foreground">
-            Overview of your contacts and interactions
-          </p>
+          {subtitle && (
+            <p className="text-sm text-muted-foreground">
+              {subtitle}
+            </p>
+          )}
         </div>
 
         {/* User quick info and logout action */}
