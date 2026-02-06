@@ -33,7 +33,7 @@ export default async function DashboardPage() {
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Total Contacts */}
         <Link href="/contacts">
-          <Card>
+          <Card className="hover:bg-muted transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Contacts
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
           </Card>
         </Link>
         {/* Recent Interactions */}
-        <Card>
+        <Card className="hover:bg-muted transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Recent Interactions
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Upcoming Reminders */}
-        <Card>
+        <Card className="hover:bg-muted transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Upcoming Reminders
@@ -109,13 +109,15 @@ export default async function DashboardPage() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            <Button className="justify-start gap-2">
+            <Button variant="dashboard" className="justify-start gap-2">
               <Activity className="h-4 w-4" />
               Log Interaction
             </Button>
-            <Button variant="secondary" className="justify-start gap-2">
-              <Users className="h-4 w-4" />
-              Add Contact
+            <Button variant="dashboard" className="justify-start gap-2" asChild>
+              <Link href="/contacts/new">
+                <Users className="h-4 w-4" />
+                Add Contact
+              </Link>
             </Button>
           </CardContent>
         </Card>
