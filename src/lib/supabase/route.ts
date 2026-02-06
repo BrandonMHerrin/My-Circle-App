@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { Database } from "./database.types";
 
 export function createSupabaseRouteClient(request: NextRequest) {
 	// Route handlers cannot use NextResponse.next().
 	// We create a normal response and let Supabase attach refreshed cookies to it.
 	const response = new NextResponse();
 
-	const supabase = createServerClient(
+	const supabase = createServerClient<Database>(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!,
 		{
