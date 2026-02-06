@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 
 interface Contact {
   id: string;
-  first_name: string;
-  last_name: string;
+  fname: string;
+  lname: string;
   email?: string;
   phone?: string;
   relationship: string;
@@ -32,7 +32,7 @@ export function ContactList({ contacts }: { contacts: Contact[] }) {
         <ContactCard
           key={contact.id}
           contact={contact}
-          onClick={(id) => router.push(`/contacts/${id}`)}
+          onClick={(id) => router.push(`/contacts/${id}/edit`)}
           onEdit={(id) => router.push(`/contacts/${id}/edit`)}
           onDelete={handleDelete}
         />

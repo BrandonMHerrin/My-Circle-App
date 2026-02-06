@@ -6,8 +6,8 @@ import { Pencil, Trash2 } from "lucide-react";
 interface ContactCardProps {
     contact: {
     id: string;
-    first_name: string;
-    last_name: string;
+    fname: string;
+    lname: string;
     email?: string;
     phone?: string;
     relationship: string;
@@ -46,8 +46,8 @@ export function ContactCard({
       onClick={() => onClick(contact.id)}
     >
       <CardHeader className="text-lg font-semibold">
-        {contact.first_name || contact.last_name
-          ? `${contact.first_name} ${contact.last_name}`.trim()
+        {contact.fname || contact.lname
+          ? `${contact.fname} ${contact.lname}`.trim()
           : "Unnamed Contact"}
       </CardHeader>
       <CardContent>
