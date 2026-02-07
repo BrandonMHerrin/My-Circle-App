@@ -1,4 +1,4 @@
-import Header from "@/components/header";
+import Header from "@/components/shared/header";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 

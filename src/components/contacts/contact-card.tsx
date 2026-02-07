@@ -1,7 +1,7 @@
 "use client";
 
 import { Tables } from "@/lib/supabase/database.types";
-import { Card, CardContent, CardHeader } from "./ui/card";
+import { Card, CardContent, CardHeader } from "../ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 
 interface ContactCardProps {
