@@ -1,6 +1,6 @@
-import { ContactCard } from "@/components/contact-card";
-import { ContactList } from "@/components/contact-list";
-import Header from "@/components/header";
+import { ContactCard } from "@/components/contacts/contact-card";
+import { ContactList } from "@/components/contacts/contact-list";
+import Header from "@/components/shared/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";

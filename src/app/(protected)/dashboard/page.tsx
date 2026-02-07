@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 
 // Icons used for visual clarity in dashboard elements
 import { Users, Activity, Bell, Plus } from "lucide-react";
-import Header from "@/components/header";
+import Header from "@/components/shared/header";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";

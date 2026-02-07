@@ -1,5 +1,5 @@
-import Header from "@/components/header";
-import LogInteraction from "@/components/log-interaction";
+import Header from "@/components/shared/header";
+import LogInteraction from "@/components/interactions/log-interaction";
 
 export default function NewInteractionPage() {
   return (

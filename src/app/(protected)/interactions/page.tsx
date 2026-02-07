@@ -1,5 +1,5 @@
-import Header from "@/components/header";
-import InteractionList from "@/components/interaction-list";
+import Header from "@/components/shared/header";
+import InteractionList from "@/components/interactions/interaction-list";
 
 export default function InteractionsPage() {
   return (
