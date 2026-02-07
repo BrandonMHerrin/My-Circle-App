@@ -1,5 +1,5 @@
-import Header from "@/components/header";
-import ContactForm from "@/components/contact-form";
+import Header from "@/components/shared/header";
+import ContactForm from "@/components/contacts/contact-form";
 import React from "react";
 import { createClient } from "@/lib/supabase/server";
 

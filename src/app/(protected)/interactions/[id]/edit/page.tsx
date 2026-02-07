@@ -1,5 +1,5 @@
-import Header from "@/components/header";
-import EditInteraction from "@/components/edit-interaction";
+import Header from "@/components/shared/header";
+import EditInteraction from "@/components/interactions/edit-interaction";
 
 export default async function EditInteractionPage({
   params,

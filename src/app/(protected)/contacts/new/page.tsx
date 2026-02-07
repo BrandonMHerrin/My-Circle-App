@@ -1,5 +1,5 @@
-import Header from "@/components/header";
-import ContactForm from "@/components/contact-form";
+import Header from "@/components/shared/header";
+import ContactForm from "@/components/contacts/contact-form";
 
 export default async function NewContactPage() {
   return (
