@@ -2,17 +2,9 @@
 
 import { ContactCard } from "./contact-card";
 import { useRouter } from "next/navigation";
+import { Tables } from "@/lib/supabase/database.types";
 
-interface Contact {
-  id: string;
-  fname: string;
-  lname: string;
-  email?: string;
-  phone?: string;
-  relationship: string;
-}
-
-export function ContactList({ contacts }: { contacts: Contact[] }) {
+export function ContactList({ contacts }: { contacts: Tables<"contacts">[] }) {
   const router = useRouter();
 
   const handleDelete = async (id: string) => {

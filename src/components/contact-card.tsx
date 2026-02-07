@@ -1,17 +1,11 @@
 "use client";
 
+import { Tables } from "@/lib/supabase/database.types";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 
 interface ContactCardProps {
-    contact: {
-    id: string;
-    fname: string;
-    lname: string;
-    email?: string;
-    phone?: string;
-    relationship: string;
-  };
+    contact: Tables<"contacts">;
   onClick: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
