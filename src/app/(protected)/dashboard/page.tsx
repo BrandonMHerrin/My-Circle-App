@@ -8,23 +8,17 @@ import { Users, Activity, Bell, Plus } from "lucide-react";
 import Header from "@/components/header";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * DashboardPage
  * Main landing page after user authentication.
  * Provides a high-level overview of contacts, interactions, and reminders.
  */
+const SEVEN_DAYS_AGO_ISO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  // Fetch necessary data for dashboard metrics (placeholders for now)
-  const { count, error } = await supabase
-    .from("contacts")
-    .select("*", { count: "exact", head: true });
-
-  if (error) {
-    throw new Error("Failed to load dashboard data");
-  }
   return (
     <>
       <Header title="Dashboard" subtitle="Overview of your contacts and interactions" />
@@ -32,8 +26,8 @@ export default async function DashboardPage() {
       {/* High-level metrics to provide meaningful insights */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Total Contacts */}
-        <Link href="/contacts">
-          <Card className="hover:bg-muted transition-colors">
+        <Link href="/contacts" className="block">
+          <Card className="h-full hover:bg-muted transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Contacts
@@ -41,7 +35,9 @@ export default async function DashboardPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">{count ?? 0}</div>
+              <Suspense fallback={<Skeleton className="h-8 w-16" />}>
+                <ContactsCount />
+              </Suspense>
             </CardContent>
           </Card>
         </Link>
@@ -54,7 +50,9 @@ export default async function DashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold">5</div>
+            <Suspense fallback={<Skeleton className="h-8 w-16" />}>
+              <RecentInteractionsCount />
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -68,6 +66,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">3</div>
+            <div className="text-sm text-muted-foreground">upcoming reminders</div>
           </CardContent>
         </Card>
       </section>
@@ -85,21 +84,9 @@ export default async function DashboardPage() {
           </CardHeader>
 
           <CardContent className="space-y-3">
-            <ActivityItem
-              text="Called John Doe"
-              time="2 days ago"
-              type="Call"
-            />
-            <ActivityItem
-              text="Met with Jane Smith"
-              time="4 days ago"
-              type="Meeting"
-            />
-            <ActivityItem
-              text="Sent follow-up email"
-              time="1 week ago"
-              type="Email"
-            />
+            <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+              <RecentInteractions />
+            </Suspense>
           </CardContent>
         </Card>
 
@@ -124,6 +111,57 @@ export default async function DashboardPage() {
       </section>
     </>
   );
+}
+
+async function ContactsCount() {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("contacts")
+    .select("*", { count: "exact", head: true });
+
+  if (error) {
+    throw new Error("Failed to load contacts count");
+  }
+  return <div className="text-3xl font-semibold">{count ?? 0}</div>;
+}
+
+async function RecentInteractionsCount() {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("interactions")
+    .select("*", { count: "exact", head: true })
+     .gte("interaction_date", SEVEN_DAYS_AGO_ISO);
+
+  if (error) {
+    throw new Error("Failed to load recent interactions count");
+  }
+  return <div className="text-3xl font-semibold">{count ?? 0}</div>;
+}
+
+async function RecentInteractions() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("interactions")
+    .select("id, type, interaction_date, contacts(fname, lname)")
+    .gte("interaction_date", SEVEN_DAYS_AGO_ISO)
+    .order("interaction_date", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    throw new Error("Failed to load recent interactions");
+  }
+  // if no interactions, show a friendly message
+  if (!data || data.length === 0) {
+    return <p className="text-sm text-muted-foreground">No interactions in the last 7 days.</p>;
+  }
+  return <>{data.map((interaction) => (
+    <ActivityItem
+      key={interaction.id}
+      text={`${interaction.type} with ${interaction.contacts?.fname} ${interaction.contacts?.lname}`}
+      time={new Date(interaction.interaction_date).toLocaleString()}
+      type={interaction.type}
+    />
+  ))}</>;
 }
 
 /**
