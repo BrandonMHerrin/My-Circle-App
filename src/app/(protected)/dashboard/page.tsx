@@ -25,6 +25,8 @@ export default async function DashboardPage() {
         <DashboardHeader />
       </Suspense>
 
+      {/* Upcoming Reminders */}
+
       {/* ===== MAIN CONTENT SECTION ===== */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Activity Feed (MY-22) */}
