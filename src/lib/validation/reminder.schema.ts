@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const reminderStatusEnum = z.enum([
 	"active",
-	"snoozed",
 	"dismissed",
 	"completed",
 ]);
@@ -11,26 +10,20 @@ export const reminderTypeEnum = z.enum([
 	"follow_up",
 	"custom",
 	"anniversary",
-	"other",
 ]);
 
 export const reminderIdSchema = z.string().uuid();
 
 export const reminderCreateSchema = z.object({
-	contact_id: z.string().uuid().optional().nullable(),
-	type: reminderTypeEnum.default("custom"),
-	title: z.string().min(1).max(200),
+	contact_id: z.string().uuid(),
+	reminder_type: reminderTypeEnum.default("custom"),
 	message: z.string().max(2000).optional().nullable(),
-	remind_at: z.string().datetime({ offset: true }), // ISO datetime with timezone offset (timestamptz)
+	reminder_date: z.string().datetime({ offset: true }), // ISO datetime with timezone offset (timestamptz)
 });
 
 export const reminderPatchSchema = z.object({
-	// You said "update status: dismiss/snooze" so we support both,
-	// but also allow other safe partial updates in case you want it.
 	status: reminderStatusEnum.optional(),
-	snoozed_until: z.string().datetime({ offset: true }).optional().nullable(),
-	remind_at: z.string().datetime({ offset: true }).optional(),
-	title: z.string().min(1).max(200).optional(),
+	reminder_date: z.string().datetime({ offset: true }).optional(),
 	message: z.string().max(2000).optional().nullable(),
 });
 
@@ -39,16 +32,16 @@ export const remindersListQuerySchema = z.object({
 	offset: z.coerce.number().int().min(0).default(0),
 
 	// filtering
-	status: reminderStatusEnum.optional(), // active/snoozed/dismissed/completed
+	status: reminderStatusEnum.optional(), // active/dismissed/completed
 	type: reminderTypeEnum.optional(),
 	contact_id: z.string().uuid().optional(),
 
-	// date range: remind_at
+	// date range: reminder_date
 	start: z.string().datetime({ offset: true }).optional(),
 	end: z.string().datetime({ offset: true }).optional(),
 
 	// sorting
-	sort: z.enum(["remind_at", "created_at"]).default("remind_at"),
+	sort: z.enum(["reminder_date", "created_at"]).default("reminder_date"),
 	order: z.enum(["asc", "desc"]).default("asc"),
 
 	// "upcoming/active" convenience

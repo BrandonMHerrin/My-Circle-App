@@ -113,26 +113,19 @@ export function buildOpenApiSpec(baseUrl?: string) {
 				properties: {
 					id: { type: "string", format: "uuid" },
 					user_id: { type: "string", format: "uuid" },
-					contact_id: { type: "string", format: "uuid", nullable: true },
+					contact_id: { type: "string", format: "uuid" },
 
-					type: {
+					reminder_type: {
 						type: "string",
-						enum: ["birthday", "follow_up", "custom", "anniversary", "other"],
+						enum: ["birthday", "follow_up", "custom", "anniversary"],
 					},
 					status: {
 						type: "string",
-						enum: ["active", "snoozed", "dismissed", "completed"],
+						enum: ["active", "dismissed", "completed"],
 					},
 
-					title: { type: "string" },
 					message: { type: "string", nullable: true },
-
-					remind_at: { type: "string", format: "date-time" },
-					snoozed_until: {
-						type: "string",
-						format: "date-time",
-						nullable: true,
-					},
+					reminder_date: { type: "string", format: "date-time" },
 
 					created_at: { type: "string", format: "date-time" },
 					updated_at: { type: "string", format: "date-time" },
@@ -142,8 +135,8 @@ export function buildOpenApiSpec(baseUrl?: string) {
 						nullable: true,
 						properties: {
 							id: { type: "string", format: "uuid" },
-							first_name: { type: "string" },
-							last_name: { type: "string" },
+							fname: { type: "string" },
+							lname: { type: "string" },
 							email: { type: "string", nullable: true },
 							phone: { type: "string", nullable: true },
 							relationship: {
@@ -164,10 +157,9 @@ export function buildOpenApiSpec(baseUrl?: string) {
 				required: [
 					"id",
 					"user_id",
-					"type",
+					"reminder_type",
 					"status",
-					"title",
-					"remind_at",
+					"reminder_date",
 					"created_at",
 					"updated_at",
 				],
@@ -176,25 +168,24 @@ export function buildOpenApiSpec(baseUrl?: string) {
 			ReminderCreate: {
 				type: "object",
 				properties: {
-					contact_id: { type: "string", format: "uuid", nullable: true },
-					type: {
+					contact_id: { type: "string", format: "uuid" },
+					reminder_type: {
 						type: "string",
-						enum: ["birthday", "follow_up", "custom", "anniversary", "other"],
+						enum: ["birthday", "follow_up", "custom", "anniversary"],
 						default: "custom",
 					},
-					title: { type: "string", example: "Follow up with Heitor" },
 					message: {
 						type: "string",
 						nullable: true,
 						example: "Ask about his new job",
 					},
-					remind_at: {
+					reminder_date: {
 						type: "string",
 						format: "date-time",
 						example: "2026-02-15T14:00:00.000Z",
 					},
 				},
-				required: ["title", "remind_at"],
+				required: ["contact_id", "reminder_date"],
 			},
 
 			ReminderPatch: {
@@ -202,15 +193,9 @@ export function buildOpenApiSpec(baseUrl?: string) {
 				properties: {
 					status: {
 						type: "string",
-						enum: ["active", "snoozed", "dismissed", "completed"],
+						enum: ["active", "dismissed", "completed"],
 					},
-					snoozed_until: {
-						type: "string",
-						format: "date-time",
-						nullable: true,
-					},
-					remind_at: { type: "string", format: "date-time" },
-					title: { type: "string" },
+					reminder_date: { type: "string", format: "date-time" },
 					message: { type: "string", nullable: true },
 				},
 			},
@@ -499,7 +484,7 @@ export function buildOpenApiSpec(baseUrl?: string) {
 							in: "query",
 							schema: {
 								type: "string",
-								enum: ["active", "snoozed", "dismissed", "completed"],
+								enum: ["active", "dismissed", "completed"],
 							},
 						},
 						{
@@ -512,7 +497,6 @@ export function buildOpenApiSpec(baseUrl?: string) {
 									"follow_up",
 									"custom",
 									"anniversary",
-									"other",
 								],
 							},
 						},
@@ -522,7 +506,7 @@ export function buildOpenApiSpec(baseUrl?: string) {
 							schema: { type: "string", format: "uuid" },
 						},
 
-						// Date range on remind_at
+						// Date range on reminder_date
 						{
 							name: "start",
 							in: "query",
@@ -540,8 +524,8 @@ export function buildOpenApiSpec(baseUrl?: string) {
 							in: "query",
 							schema: {
 								type: "string",
-								enum: ["remind_at", "created_at"],
-								default: "remind_at",
+								enum: ["reminder_date", "created_at"],
+								default: "reminder_date",
 							},
 						},
 						{

@@ -49,7 +49,7 @@ export async function DashboardHeader() {
   const { count: upcomingRemindersCount, error: remindersError } = await supabase
     .from("reminders")
     .select("*", { count: "exact", head: true })
-    .gte("reminder_date", new Date().toISOString());
+    .eq("status", "active");
 
   if (remindersError) {
     throw new Error("Failed to load upcoming reminders count");

@@ -87,10 +87,9 @@ export async function POST(req: NextRequest) {
 
 		const created = await createReminder(supabase as any, user.id, {
 			contact_id: input.contact_id ?? null,
-			type: input.type,
-			title: input.title,
+			reminder_type: input.reminder_type,
 			message: input.message ?? null,
-			remind_at: input.remind_at,
+			reminder_date: input.reminder_date,
 		});
 
 		const res = NextResponse.json({ data: created }, { status: 201 });
