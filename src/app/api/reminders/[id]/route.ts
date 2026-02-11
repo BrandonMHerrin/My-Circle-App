@@ -39,29 +39,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 		const body = await req.json();
 		const patch = reminderPatchSchema.parse(body);
 
-		// Convenience: if status becomes "snoozed" and snoozed_until not provided, reject
-		if (patch.status === "snoozed" && !patch.snoozed_until) {
-			return NextResponse.json(
-				{
-					error: {
-						message: "snoozed_until is required when status is snoozed",
-					},
-				},
-				{ status: 400 },
-			);
-		}
-
-		// If status becomes dismissed/completed, clear snoozed_until
-		const dbPatch: Record<string, any> = { ...patch };
-		if (patch.status === "dismissed" || patch.status === "completed") {
-			dbPatch.snoozed_until = null;
-		}
-
 		const updated = await patchReminder(
 			supabase as any,
 			user.id,
 			idParsed.data,
-			dbPatch,
+			patch,
 		);
 		if (!updated)
 			return NextResponse.json(

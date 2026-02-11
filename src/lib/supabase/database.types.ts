@@ -168,7 +168,7 @@ export type Database = {
         | "colleague"
         | "acquaintance"
         | "other"
-      reminder_status: "pending" | "sent" | "dismissed"
+      reminder_status: "active" | "completed" | "dismissed"
       reminder_type: "birthday" | "anniversary" | "follow_up" | "custom"
     }
     CompositeTypes: {
@@ -312,7 +312,7 @@ export const Constants = {
         "acquaintance",
         "other",
       ],
-      reminder_status: ["pending", "sent", "dismissed"],
+      reminder_status: ["active", "completed", "dismissed"],
       reminder_type: ["birthday", "anniversary", "follow_up", "custom"],
     },
   },

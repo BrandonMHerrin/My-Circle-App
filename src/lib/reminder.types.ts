@@ -1,15 +1,10 @@
-export type ReminderStatus = "active" | "snoozed" | "dismissed" | "completed";
-export type ReminderType =
-	| "birthday"
-	| "follow_up"
-	| "custom"
-	| "anniversary"
-	| "other";
+export type ReminderStatus = "active" | "dismissed" | "completed";
+export type ReminderType = "birthday" | "follow_up" | "custom" | "anniversary";
 
 export type ContactMini = {
 	id: string;
-	first_name: string;
-	last_name: string;
+	fname: string;
+	lname: string;
 	email: string | null;
 	phone: string | null;
 	relationship: string | null;
@@ -20,15 +15,12 @@ export type Reminder = {
 	id: string;
 	user_id: string;
 
-	contact_id: string | null; // optional if reminder isn't tied to a contact
-	type: ReminderType;
+	contact_id: string;
+	reminder_type: ReminderType;
 	status: ReminderStatus;
 
-	title: string;
 	message: string | null;
-
-	remind_at: string; // timestamptz string
-	snoozed_until: string | null; // timestamptz string
+	reminder_date: string;
 
 	created_at: string;
 	updated_at: string;

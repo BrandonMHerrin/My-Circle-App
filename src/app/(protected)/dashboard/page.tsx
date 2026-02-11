@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { DashboardHeader, DashboardHeaderSkeleton } from "@/components/dashboard/dashboard-header";
 import { InteractionsFeed, InteractionsFeedSkeleton } from "@/components/dashboard/interaction-feed";
+import { RemindersFeed, RemindersFeedSkeleton } from "@/components/dashboard/reminders-feed";
 
 /**
  * DashboardPage
@@ -23,6 +24,11 @@ export default async function DashboardPage() {
       
       <Suspense fallback={<DashboardHeaderSkeleton />}>
         <DashboardHeader />
+      </Suspense>
+
+      {/* Upcoming Reminders */}
+      <Suspense fallback={<RemindersFeedSkeleton />}>
+        <RemindersFeed />
       </Suspense>
 
       {/* ===== MAIN CONTENT SECTION ===== */}

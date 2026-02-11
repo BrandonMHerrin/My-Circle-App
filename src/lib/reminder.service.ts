@@ -13,7 +13,7 @@ type ListParams = {
 	contact_id?: string;
 	start?: string;
 	end?: string;
-	sort: "remind_at" | "created_at";
+	sort: "reminder_date" | "created_at";
 	order: "asc" | "desc";
 	upcoming?: boolean;
 };
@@ -23,15 +23,13 @@ export async function listReminders(
 	userId: string,
 	params: ListParams,
 ) {
-	// Join contacts; Supabase uses foreign key relationships for nested select
-	// Ensure reminders.contact_id -> contacts.id FK exists in DB
 	let q = supabase
 		.from("reminders")
 		.select(
 			`
       *,
       contact:contacts (
-        id, first_name, last_name, email, phone, relationship, dob
+        id, fname, lname, email, phone, relationship, dob
       )
     `,
 			{ count: "exact" },
@@ -39,18 +37,18 @@ export async function listReminders(
 		.eq("user_id", userId);
 
 	if (params.status) q = q.eq("status", params.status);
-	if (params.type) q = q.eq("type", params.type);
+	if (params.type) q = q.eq("reminder_type", params.type);
 	if (params.contact_id) q = q.eq("contact_id", params.contact_id);
 
-	if (params.start) q = q.gte("remind_at", params.start);
-	if (params.end) q = q.lte("remind_at", params.end);
+	if (params.start) q = q.gte("reminder_date", params.start);
+	if (params.end) q = q.lte("reminder_date", params.end);
 
 	// upcoming convenience filter:
 	// - due at or after now
 	// - exclude dismissed/completed
 	if (params.upcoming) {
 		const now = new Date().toISOString();
-		q = q.gte("remind_at", now).not("status", "in", "(dismissed,completed)");
+		q = q.gte("reminder_date", now).not("status", "in", "(dismissed,completed)");
 	}
 
 	q = q.order(params.sort, { ascending: params.order === "asc" });
@@ -68,30 +66,27 @@ export async function createReminder(
 	supabase: SupabaseClient,
 	userId: string,
 	input: {
-		contact_id?: string | null;
-		type: ReminderType;
-		title: string;
+		contact_id: string | null;
+		reminder_type: ReminderType;
 		message?: string | null;
-		remind_at: string;
+		reminder_date: string;
 	},
 ) {
 	const { data, error } = await supabase
 		.from("reminders")
 		.insert({
 			user_id: userId,
-			contact_id: input.contact_id ?? null,
-			type: input.type,
+			contact_id: input.contact_id,
+			reminder_type: input.reminder_type,
 			status: "active",
-			title: input.title,
 			message: input.message ?? null,
-			remind_at: input.remind_at,
-			snoozed_until: null,
+			reminder_date: input.reminder_date,
 		})
 		.select(
 			`
       *,
       contact:contacts (
-        id, first_name, last_name, email, phone, relationship, dob
+        id, fname, lname, email, phone, relationship, dob
       )
     `,
 		)
@@ -116,7 +111,7 @@ export async function patchReminder(
 			`
       *,
       contact:contacts (
-        id, first_name, last_name, email, phone, relationship, dob
+        id, fname, lname, email, phone, relationship, dob
       )
     `,
 		)
