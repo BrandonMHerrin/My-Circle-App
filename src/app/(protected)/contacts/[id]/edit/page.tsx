@@ -19,7 +19,7 @@ export default async function EditContactPage({params}: {params: {id: string}}) 
      
   return (
     <>
-      <Header title="Edit Contact" subtitle="Editing an existing contact in your list" />
+      <Header title="Edit Contact" subtitle="Editing an existing contact in your list" backHref="/contacts" />
       <section>
         <ContactForm initialData={contactData} contactId={id}/>
       </section>
