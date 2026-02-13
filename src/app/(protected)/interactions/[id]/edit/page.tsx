@@ -10,7 +10,7 @@ export default async function EditInteractionPage({
 
   return (
     <>
-      <Header title="Edit Interaction" subtitle="Update your interaction details" />
+      <Header title="Edit Interaction" subtitle="Update your interaction details" backHref="/interactions" />
       <section className="space-y-4">
         <EditInteraction id={id} />
       </section>

@@ -133,12 +133,6 @@ export default function InteractionList() {
     <div className="space-y-4">
       {/* top actions */}
       <div className="flex items-center justify-between gap-3">
-        <Button variant="outline" asChild>
-          <Link href="/dashboard" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Dashboard
-          </Link>
-        </Button>
 
         <Button asChild className="gap-2">
           <Link href="/interactions/new">

@@ -23,7 +23,7 @@ export default async function ContactsPage() {
   
   return (
     <>
-        <Header title="Contacts" subtitle="Manage your contacts and their details" />
+        <Header title="Contacts" subtitle="Manage your contacts and their details" backHref="/dashboard" />
         {/* Add Contact Button */}
         <Link href="/contacts/new" className="mb-4 inline-block">
           <Button>

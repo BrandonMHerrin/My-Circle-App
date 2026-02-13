@@ -82,10 +82,10 @@ export async function POST(req: NextRequest) {
 		const input = reminderCreateSchema.parse(body);
 
 		const created = await createReminder(supabase as any, user.id, {
-			contact_id: input.contact_id ?? null,
+			contact_id: input.contact_id,
 			reminder_type: input.reminder_type,
-			message: input.message ?? null,
-			reminder_date: input.reminder_date,
+			message: input.message ?? "",
+			reminder_date: input.reminder_date || "",
 		});
 
 		const res = NextResponse.json({ data: created }, { status: 201 });
