@@ -3,14 +3,10 @@ import { ZodError } from "zod";
 import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { contactsListQuerySchema, contactCreateSchema } from "@/lib/validation/contact.schema";
 import { listContacts, createContact } from "@/lib/contact.service";
+import { mergeCookies } from "@/lib/supabase/merge-cookies";
 
 function zodToJson(err: ZodError) {
     return { error: { message: "Validation failed", details: err.flatten() } };
-}
-
-function mergeCookies(from: NextResponse, to: NextResponse) {
-    from.cookies.getAll().forEach((c) => to.cookies.set(c));
-    return to;
 }
 
 

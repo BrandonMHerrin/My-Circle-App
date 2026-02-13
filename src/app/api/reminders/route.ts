@@ -6,14 +6,10 @@ import {
 	reminderCreateSchema,
 } from "@/lib/validation/reminder.schema";
 import { listReminders, createReminder } from "@/lib/reminder.service";
+import { mergeCookies } from "@/lib/supabase/merge-cookies";
 
 function zodToJson(err: ZodError) {
 	return { error: { message: "Validation failed", details: err.flatten() } };
-}
-
-function mergeCookies(from: NextResponse, to: NextResponse) {
-	from.cookies.getAll().forEach((c) => to.cookies.set(c));
-	return to;
 }
 
 export async function GET(req: NextRequest) {

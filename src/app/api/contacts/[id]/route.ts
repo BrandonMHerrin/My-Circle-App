@@ -10,14 +10,10 @@ import {
 	updateContact,
 	deleteContact,
 } from "@/lib/contact.service";
+import { mergeCookies } from "@/lib/supabase/merge-cookies";
 
 function zodToJson(err: ZodError) {
 	return { error: { message: "Validation failed", details: err.flatten() } };
-}
-
-function mergeCookies(from: NextResponse, to: NextResponse) {
-	from.cookies.getAll().forEach((c) => to.cookies.set(c));
-	return to;
 }
 
 type Params = { params: Promise<{ id: string }> };
