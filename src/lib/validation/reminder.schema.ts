@@ -15,16 +15,40 @@ export const reminderTypeEnum = z.enum([
 export const reminderIdSchema = z.string().uuid();
 
 export const reminderCreateSchema = z.object({
-	contact_id: z.string().uuid(),
-	reminder_type: reminderTypeEnum.default("custom"),
-	message: z.string().max(2000).optional().nullable(),
-	reminder_date: z.string().datetime({ offset: true }), // ISO datetime with timezone offset (timestamptz)
+  contact_id: z.string().uuid(),
+  reminder_type: reminderTypeEnum.default("custom"),
+  message: z.string().max(2000).optional().nullable(),
+  reminder_date: z
+    .string()
+    .nullable()
+    .transform((val) => (val ? new Date(val).toISOString() : null)),
+});
+
+export const reminderCreateSchemaForForm = z.object({
+  contact_id: z.string().uuid(),
+  reminder_type: reminderTypeEnum.default("custom"),
+  message: z.string().max(2000).optional().nullable(),
+  reminder_date: z.date().nullable(),
+});
+
+export const reminderPatchSchemaForForm = z.object({
+  contact_id: z.string().uuid(),
+  status: reminderStatusEnum.optional(),
+  reminder_type: reminderTypeEnum.optional(),
+  message: z.string().max(2000).optional().nullable(),
+  reminder_date: z.date().nullable(),
 });
 
 export const reminderPatchSchema = z.object({
-	status: reminderStatusEnum.optional(),
-	reminder_date: z.string().datetime({ offset: true }).optional(),
-	message: z.string().max(2000).optional().nullable(),
+  contact_id: z.string().uuid().optional(),
+  status: reminderStatusEnum.optional(),
+  reminder_type: reminderTypeEnum.optional(),
+  message: z.string().max(2000).optional().nullable(),
+  reminder_date: z
+    .string()
+    .datetime({ offset: true })
+    .nullable()
+    .optional(),
 });
 
 export const remindersListQuerySchema = z.object({

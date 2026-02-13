@@ -1,45 +1,43 @@
+import Link from "next/link";
 import { UserMenu } from "./user-menu";
+import { ArrowLeft } from "lucide-react";
 
-/**
- * Header
- *
- * Reusable page header component that displays a title and user menu.
- * Each page imports and renders this component with its own title.
- *
- * This is a shared component (not in layout) because the title varies per page.
- * The UserMenu is included here and consumes auth state from SessionProvider.
- *
- * @param title - The page title to display (e.g., "Dashboard", "Contacts")
- *
- * @example
- * // In a page component:
- * export default function DashboardPage() {
- *   return (
- *     <>
- *       <Header title="Dashboard" />
- *       {/* page content *\/}
- *     </>
- *   );
- * }
- */
-export default function Header({ title, subtitle }: { title: string; subtitle?: string }) {
+interface HeaderProps {
+  title: string;
+  subtitle?: string;
+  backHref?: string; // optional back link
+}
+
+export default function Header({
+  title,
+  subtitle,
+  backHref,
+}: HeaderProps) {
   return (
-    <>
-      {/* ===== HEADER SECTION ===== */}
-      {/* Displays page title and user context */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground">
-              {subtitle}
-            </p>
-          )}
-        </div>
+    <header className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-1">
+        {backHref && (
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Link>
+        )}
 
-        {/* User quick info and logout action */}
-        <UserMenu />
-      </header>
-    </>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {title}
+        </h1>
+
+        {subtitle && (
+          <p className="text-sm text-muted-foreground">
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      <UserMenu />
+    </header>
   );
 }
