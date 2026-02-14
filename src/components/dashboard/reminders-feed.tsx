@@ -1,54 +1,31 @@
-import { createClient } from "@/lib/supabase/server";
-import { ReminderNotifications } from "../reminders/reminder-notifications";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Skeleton } from "../ui/skeleton";
+// src/components/dashboard/reminders-feed.tsx
+import React from "react";
+import { StickerCard } from "@/components/notebook/sticker-card";
+import { Bell } from "lucide-react";
 
-export async function RemindersFeed() {
-  const supabase = await createClient();
-
-  const todaysDate = new Date();
-  todaysDate.setHours(0, 0, 0, 0); // Set to start of the day
-  const twoWeeksFromNow = new Date();
-  twoWeeksFromNow.setDate(todaysDate.getDate() + 14);
-  twoWeeksFromNow.setHours(23, 59, 59, 999); // Set to end of the day
-
-  // Fetch upcoming reminders (next 7 days)
-  const { data: reminders, error } = await supabase
-    .from("reminders")
-    .select("*")
-    .lte("reminder_date", twoWeeksFromNow.toISOString())
-    .eq("status", "active")
-    .order("reminder_date", { ascending: true });
-
-  if (error) {
-    throw new Error("Failed to load reminders");
-  }
-
-  console.log("Loaded reminders: ", reminders.length ?? 0);
-
+export function RemindersFeed() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Upcoming Reminders</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 max-h-96 overflow-y-auto">
-        <ReminderNotifications initialReminders={reminders ?? []} />
-      </CardContent>
-    </Card>
+    // ✅ CAMBIAMOS de lemon (amarillo) a mint (verde)
+    <StickerCard tone="mint" tiltIndex={3} className="p-6">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 ring-1 ring-black/10">
+          <Bell className="h-5 w-5 text-neutral-800" />
+        </div>
+
+        <h3 className="text-lg font-semibold text-neutral-900">
+          Upcoming Reminders
+        </h3>
+      </div>
+
+      <p className="mt-4 text-sm text-neutral-700">
+        No upcoming reminders. Add one to stay connected.
+      </p>
+    </StickerCard>
   );
 }
 
 export function RemindersFeedSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Upcoming Reminders</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32 w-full rounded-md" />
-        ))}
-      </CardContent>
-    </Card>
+    <div className="h-[160px] rounded-2xl bg-[#CFF5E7] animate-pulse ring-1 ring-black/5" />
   );
 }

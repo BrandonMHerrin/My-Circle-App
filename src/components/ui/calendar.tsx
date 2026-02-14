@@ -39,8 +39,9 @@ function Calendar({
       captionLayout={captionLayout}
       locale={locale}
       formatters={{
-        formatMonthDropdown: (date) =>
-          date.toLocaleString(locale?.code, { month: "short" }),
+        // ✅ Importante: NO depender de locale dinámico (server vs client).
+        // Si quieres inglés, cambia "es-CL" por "en-US".
+        formatMonthDropdown: (date) => date.toLocaleString("es-CL", { month: "short" }),
         ...formatters,
       }}
       classNames={{
@@ -199,7 +200,8 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
-      data-day={day.date.toLocaleDateString(locale?.code)}
+      // ✅ FIX hydration mismatch: string estable (no depende del locale)
+      data-day={day.date.toISOString().slice(0, 10)} // "YYYY-MM-DD"
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&
