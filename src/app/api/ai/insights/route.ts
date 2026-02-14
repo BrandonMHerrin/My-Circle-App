@@ -4,16 +4,16 @@ import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { NextRequest, NextResponse } from "next/server";
 import { mergeCookies } from "@/lib/supabase/merge-cookies";
 import { generateText, Output } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { insightSchema } from "@/lib/validation/insight.schema";
 
 export async function GET(req: NextRequest) {
   // if no OPENAI_API_KEY, return early with error
-  if (!process.env.OPENAI_API_KEY) {
+  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     return new Response(
       JSON.stringify({
         error: {
-          message: "OpenAI API key not configured",
+          message: "Google/OpenAI API key not configured",
         },
       }),
       { status: 500 },
@@ -115,15 +115,20 @@ export async function GET(req: NextRequest) {
     };
 
     const { output } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: google("gemini-2.5-flash-lite"),
       output: Output.object({ schema: insightSchema }),
       system: `You are a relationship management assistant. Analyze the user's contact data to identify actionable insights. Rules:
-- Flag contacts with no interaction in 30+ days as neglected
-- Flag contacts with zero interactions
-- Identify upcoming birthdays (within 30 days) that have no reminder set
-- Note imbalanced interaction types (e.g. only calls, no in-person)
-- Include the contact_id in the payload for any actionable insight
-- Return 3-5 insights, ordered by priority (high first)`,
+
+          You MUST return strictly valid JSON that matches the provided schema.
+          Do not include explanations.
+          Do not include markdown.
+          Do not include extra fields.
+          - Flag contacts with no interaction in 30+ days as neglected. Format: "It's been a while since you connected with {contact_name}."
+          - Flag contacts with zero interactions. Format: "You haven't interacted with {contact_name} yet."
+          - Identify upcoming birthdays (only contacts within 30 days) that have no reminder set message. format: "{{contact_name}} birthday is coming soon!" (include birthday date)"
+          - Note imbalanced interaction types (e.g. only calls, no in-person). Format: "Your interactions with {contact_name} are mostly {types}." (include interaction_types)"
+          - Include the contact_id in the payload for any actionable insight
+          - Return 3-5 insights, ordered by priority (high first)`,
       prompt: `Today's date is ${new Date().toISOString().slice(0, 10)}.\n\nHere is the user's data:\n\n${JSON.stringify(summary, null, 2)}`,
     });
 

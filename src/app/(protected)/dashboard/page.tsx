@@ -11,6 +11,8 @@ import { Suspense } from "react";
 import { DashboardHeader, DashboardHeaderSkeleton } from "@/components/dashboard/dashboard-header";
 import { InteractionsFeed, InteractionsFeedSkeleton } from "@/components/dashboard/interaction-feed";
 import { RemindersFeed, RemindersFeedSkeleton } from "@/components/dashboard/reminders-feed";
+import { AISugestions } from "@/components/dashboard/ai-insights";
+import { AISuggestionsSkeleton } from "@/components/dashboard/ai-insights-feed";
 
 /**
  * DashboardPage
@@ -24,6 +26,10 @@ export default async function DashboardPage() {
       
       <Suspense fallback={<DashboardHeaderSkeleton />}>
         <DashboardHeader />
+      </Suspense>
+
+      <Suspense fallback={<AISuggestionsSkeleton />}>
+        <AISugestions />  
       </Suspense>
 
       {/* Upcoming Reminders */}
