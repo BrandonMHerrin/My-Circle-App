@@ -15,14 +15,14 @@ export function AISugestions() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [insights, setInsights] = useState<Insight[]>([]);
-    
-    async function generateInsights(){
+
+    async function generateInsights() {
         try {
             setLoading(true);
             setError(null);
-            
+
             const res = await fetch("/api/ai/insights", {
-              credentials: "include",
+                credentials: "include",
             });
 
             if (!res.ok) {
@@ -32,12 +32,12 @@ export function AISugestions() {
             }
             const data = await res.json();
             setInsights(data.insights ?? []);
-        } catch(error: any){
+        } catch (error: any) {
             setError(error.message ?? "Something went wrong loading AI insights");
-        }finally{
+        } finally {
             setLoading(false);
         }
-    
+
     }
 
     async function handleInsightAction(insight: Insight) {
@@ -46,33 +46,33 @@ export function AISugestions() {
             if (insight.action_type === "create_reminder") {
                 // Call your API to create a reminder
                 const res = await fetch("/api/reminders", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    contact_id: insight.payload.contact_id,
-                    reminder_type: insight.payload.reminder_type ?? "custom",
-                    reminder_date: insight.payload.reminder_date ?? new Date().toISOString(),
-                    message: insight.payload.message ?? insight.message,
-                }),
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        contact_id: insight.payload.contact_id,
+                        reminder_type: insight.payload.reminder_type ?? "custom",
+                        reminder_date: insight.payload.reminder_date ?? new Date().toISOString(),
+                        message: insight.payload.action_message ?? insight.message,
+                    }),
                 });
-            
+
                 if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.error?.message ?? "Failed to create reminder");
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error?.message ?? "Failed to create reminder");
                 }
-            
+
                 alert(`Reminder created for ${insight.contact_name}`);
             } else if (insight.action_type === "log_interaction") {
                 console.log("to be implemented");
             }
             setInsights((prev) => prev.filter((i: Insight) => i !== insight));
-            
-        } catch(error: any){
+
+        } catch (error: any) {
             alert(error.message ?? "Something went wrong loading AI insights");
         }
     }
-    useEffect(() =>{
+    useEffect(() => {
         generateInsights();
     }, []);
 
@@ -83,14 +83,14 @@ export function AISugestions() {
         <div className="space-y-4">
             {insights && (insights.map((insight, idx) => {
                 return (
-                <AIInsightCard
-                    key={idx}
-                    insight={insight}
-                    onAction={async (ins) => await handleInsightAction(ins)}
-                    onDismiss={(ins) => setInsights((prev) => prev.filter((i) => i !== ins))}
-                />
+                    <AIInsightCard
+                        key={idx}
+                        insight={insight}
+                        onAction={async (ins) => await handleInsightAction(ins)}
+                        onDismiss={(ins) => setInsights((prev) => prev.filter((i) => i !== ins))}
+                    />
                 );
-            }))}                      
+            }))}
         </div>
     );
 }
