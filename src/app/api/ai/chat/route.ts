@@ -1,96 +1,106 @@
-import { NextResponse } from "next/server"
-import { openai } from "@ai-sdk/openai"
-import { createClient } from "@supabase/supabase-js"
-import { tools } from "@/lib/ai/tools"
-import { executeTool } from "@/lib/ai/executor"
+import { NextRequest } from "next/server";
+import { streamText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { getTools } from "@/lib/ai/tools";
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
-export async function POST(req: Request) {
-  const { message, history = [] } = await req.json()
+export async function POST(req: NextRequest) {
+  const { supabase } = createSupabaseRouteClient(req);
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!
-  )
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user;
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  const modelClient = openai.responses("gpt-4.1-mini")
-
   try {
-    // Initial model call
-    let response = await modelClient.create({
-      input: [
-        ...history,
-        {
-          role: "user",
-          content: message,
-        },
-      ],
-      tools,
+    const body = await req.json();
+    const {
+      message,
+      history = [],
+      context = { currentPage: "unknown" },
+    } = body;
+
+    const result = streamText({
+      model: openai("gpt-4o-mini"),
+      tools: getTools(supabase, user.id) as any,
+      messages: [...history, { role: "user", content: message }],
+      // Use stopWhen as maxSteps equivalent in this SDK version
+      stopWhen: (step: any) => step.steps.length >= 5,
       system: `
-        You are an AI CRM assistant.
 
-        Rules:
-        - NEVER invent data.
-        - ALWAYS use tools to read or modify database data.
-        - If information is missing, ask a clarification question.
-        - If a contact name is ambiguous, call list_contacts first.
-        - You may call multiple tools in sequence to complete a task.
-        - After tool results are returned, generate a helpful confirmation message.
+You are an AI CRM assistant.
+
+Rules:
+- NEVER invent or guess data.
+- ALWAYS use tools to read or modify database data (especially for counting or listing).
+- When asked for relationship advice or activity suggestions with a contact, ALWAYS use get_contact_insights first to understand the context.
+- ALWAYS use ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ) for dates when calling tools.
+- BE PROACTIVE: If a tool has optional filters, use sensible defaults (like fetching all active items) rather than asking the user for clarification.
+- BE PROACTIVE: If the user says "yes" or "ok" to a suggestion to create a reminder, ask for ANY missing mandatory details (like a message or date) in a single message, then execute the tool.
+- If the user asks for "contacts", "reminders", or "interactions" without specifics, fetch them all first.
+- If information is missing, ask a clarification question.
+- Keep responses concise.
+- After completing an action, confirm clearly what was done.
+- Use markdown for lists and bold text.
+- The user is currently on the ${context.currentPage} page.
+
       `,
-    })
+    });
 
-    // 🔁 Agent loop (multi-step tool execution)
-    while (true) {
-      const toolCalls = response.output.filter(
-        (item: any) => item.type === "tool_call"
-      )
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const part of result.fullStream) {
+            // Send original part as a JSON line
+            controller.enqueue(encoder.encode(JSON.stringify(part) + "\n"));
 
-      if (!toolCalls.length) break
+            // If it's a tool-result, generate a UI action
+            if (part.type === 'tool-result') {
+              const toolResult = (part as any).output;
+              const toolName = (part as any).toolName;
 
-      const toolResults = []
+              console.log(`[AI TOOL RESULT] ${toolName}:`, JSON.stringify(toolResult, null, 2));
 
-      for (const call of toolCalls) {
-        const result = await executeTool(
-          call.name,
-          call.arguments,
-          user.id,
-          supabase
-        )
+              let action = null;
+              if (toolName === "create_contact" && toolResult?.contact?.id) {
+                action = { type: "link", label: "View Contact", href: `/contacts/${toolResult.contact.id}/edit` };
+              } else if (toolName === "create_reminder" && toolResult?.reminder?.id) {
+                action = { type: "link", label: "View Reminder", href: `/reminders/${toolResult.reminder.id}/edit` };
+              } else if (toolName === "log_interaction" && toolResult?.interaction?.id) {
+                action = { type: "link", label: "View Interaction", href: `/interactions/${toolResult.interaction.id}/edit` };
+              }
 
-        toolResults.push({
-          type: "tool_result",
-          tool_call_id: call.id,
-          output: JSON.stringify(result),
-        })
-      }
-
-      // Send tool results back to model
-      response = await modelClient.create({
-        input: [...response.output, ...toolResults],
-        tools,
-      })
-    }
-
-    return NextResponse.json({
-      reply: response.output_text,
-      raw: response.output, // useful for debugging (optional)
-    })
-  } catch (error: any) {
-    console.error("Chat route error:", error)
-
-    return NextResponse.json(
-      {
-        error: "Failed to process request",
-        details: error?.message ?? "Unknown error",
+              if (action) {
+                controller.enqueue(encoder.encode(JSON.stringify({ type: "action", action }) + "\n"));
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Stream error:", e);
+        } finally {
+          controller.close();
+        }
       },
-      { status: 500 }
-    )
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } catch (error: any) {
+    console.error("Chat route error:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

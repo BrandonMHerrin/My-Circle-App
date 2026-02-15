@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
     };
 
     const { output } = await generateText({
-      model: openai("gpt-4.1-mini"),
+      model: openai("gpt-4o-mini"),
       output: Output.object({ schema: insightSchema }),
       system: `You are a relationship management assistant. Analyze the user's contact data to identify actionable insights. Rules:
 
