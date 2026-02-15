@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -83,7 +83,9 @@ export default function InteractionList() {
       const matchesType = typeFilter === "all" ? true : x.type === typeFilter;
 
       const contactName =
-        `${x.contact?.fname ?? ""} ${x.contact?.lname ?? ""}`.trim().toLowerCase();
+        `${x.contact?.fname ?? ""} ${x.contact?.lname ?? ""}`
+          .trim()
+          .toLowerCase();
 
       const notes = (x.notes ?? "").toLowerCase();
       const loc = (x.location ?? "").toLowerCase();
@@ -106,7 +108,6 @@ export default function InteractionList() {
     const ok = confirm("Delete this interaction?");
     if (!ok) return;
 
-    // Optimistic UI
     const prev = items;
     setItems((p) => p.filter((x) => x.id !== id));
 
@@ -123,7 +124,6 @@ export default function InteractionList() {
 
       router.refresh();
     } catch (e: any) {
-      // rollback
       setItems(prev);
       alert(e?.message ?? "Delete failed");
     }
@@ -131,24 +131,12 @@ export default function InteractionList() {
 
   return (
     <div className="space-y-4">
-      {/* top actions */}
-      <div className="flex items-center justify-between gap-3">
-
-        <Button asChild className="gap-2">
-          <Link href="/interactions/new">
-            <Plus className="h-4 w-4" />
-            Log Interaction
-          </Link>
-        </Button>
-      </div>
-
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Interaction History</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <Input
               placeholder="Search notes..."
@@ -175,7 +163,6 @@ export default function InteractionList() {
             </Button>
           </div>
 
-          {/* list */}
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : err ? (

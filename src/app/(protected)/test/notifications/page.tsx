@@ -1,5 +1,5 @@
 // app/test/notifications/page.tsx
-import { ReminderCardWrapper } from "@/components/reminders/reminder-card-wrapper";
+import ReminderCardWrapper from "@/components/reminders/reminder-card-wrapper";
 import { ReminderNotifications } from "@/components/reminders/reminder-notifications";
 import { Tables } from "@/lib/supabase/database.types";
 
@@ -38,6 +38,7 @@ const mockReminders: Tables<"reminders">[] = [
     updated_at: new Date().toISOString(),
   },
 ];
+
 const mockReminder: Tables<"reminders">[] = [
   {
     id: "r4",
@@ -58,8 +59,14 @@ export default function NotificationsTestPage() {
       <div className="max-w-sm p-1">
         <ReminderNotifications initialReminders={mockReminders} />
       </div>
+
       <div className="max-w-sm p-1">
-        <ReminderCardWrapper reminder={mockReminder[0]} />
+        {/* OJO: tu wrapper actual usa children, NO prop "reminder". */}
+        <ReminderCardWrapper>
+          <div className="text-sm text-neutral-700">
+            {mockReminder[0].message}
+          </div>
+        </ReminderCardWrapper>
       </div>
     </>
   );
