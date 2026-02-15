@@ -4,16 +4,16 @@ import { createSupabaseRouteClient } from "@/lib/supabase/route";
 import { NextRequest, NextResponse } from "next/server";
 import { mergeCookies } from "@/lib/supabase/merge-cookies";
 import { generateText, Output } from "ai";
-import { google } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 import { insightSchema } from "@/lib/validation/insight.schema";
 
 export async function GET(req: NextRequest) {
   // if no OPENAI_API_KEY, return early with error
-  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  if (!process.env.OPENAI_API_KEY) {
     return new Response(
       JSON.stringify({
         error: {
-          message: "Google/OpenAI API key not configured",
+          message: "OpenAI API key not configured",
         },
       }),
       { status: 500 },
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
     };
 
     const { output } = await generateText({
-      model: google("gemini-2.5-flash-lite"),
+      model: openai("gpt-4.1-mini"),
       output: Output.object({ schema: insightSchema }),
       system: `You are a relationship management assistant. Analyze the user's contact data to identify actionable insights. Rules:
 
@@ -123,6 +123,10 @@ export async function GET(req: NextRequest) {
           Do not include explanations.
           Do not include markdown.
           Do not include extra fields.
+          The payload object MUST always be present.
+          All payload fields must always be included.
+          If action_type is "none", set reminder_type to "custom" and reminder_date and action_message to empty strings.
+          If action_type is "log_interaction", set reminder_type to "custom" and reminder_date to empty string.
           - Flag contacts with no interaction in 30+ days as neglected. Format: "It's been a while since you connected with {contact_name}."
           - Flag contacts with zero interactions. Format: "You haven't interacted with {contact_name} yet."
           - Identify upcoming birthdays (only contacts within 30 days) that have no reminder set message. format: "{{contact_name}} birthday is coming soon!" (include birthday date)"
