@@ -21,10 +21,8 @@ export default function NewInteractionPage() {
       />
 
       <section className="max-w-5xl">
-        <StickerCard tone="sky" tiltIndex={2} className="p-6">
-          <div className="rounded-2xl bg-white/75 ring-1 ring-black/10 p-5">
-            <LogInteraction redirectTo="/dashboard" />
-          </div>
+        <StickerCard tone="sky" tiltIndex={2} className="p-4 sm:p-6">
+          <LogInteraction redirectTo="/dashboard" />
         </StickerCard>
       </section>
     </>

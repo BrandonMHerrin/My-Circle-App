@@ -36,16 +36,16 @@ export default async function ContactsPage() {
         </Link>
       </div>
 
-      <StickerCard tone="lemon" tiltIndex={1} className="p-5">
-        <div className="rounded-2xl bg-white/70 ring-1 ring-black/10 p-5">
-          {contactList.length === 0 ? (
-            <p className="text-sm text-neutral-700">
+      <StickerCard tone="lemon" tiltIndex={1} className="p-4 sm:p-6">
+        {contactList.length === 0 ? (
+          <div className="text-center py-10 bg-white/50 rounded-xl">
+            <p className="text-neutral-600">
               No contacts found. Start by adding a new contact!
             </p>
-          ) : (
-            <ContactList contacts={contactList} />
-          )}
-        </div>
+          </div>
+        ) : (
+          <ContactList contacts={contactList} />
+        )}
       </StickerCard>
     </>
   );

@@ -105,18 +105,18 @@ export async function ReminderList({ limit = 3 }: { limit?: number }) {
 
   return (
     <StickerCard tone="mint" tiltIndex={5} className="overflow-hidden">
-      <div className="p-6">
-        <div className="flex items-center justify-between gap-4">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 ring-1 ring-black/10">
+            <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 ring-1 ring-black/10">
               <Bell className="h-5 w-5 text-neutral-800" />
             </div>
 
             <div className="min-w-0">
-              <h3 className="text-lg font-semibold text-neutral-900 truncate">
+              <h3 className="text-lg sm:text-md font-semibold text-neutral-900">
                 Upcoming Reminders
               </h3>
-              <p className="text-sm text-neutral-700 truncate">
+              <p className="text-sm text-neutral-700 hidden sm:block">
                 Stay on top of your follow-ups.
               </p>
             </div>
@@ -125,9 +125,9 @@ export async function ReminderList({ limit = 3 }: { limit?: number }) {
           <Button
             asChild
             variant="outline"
-            className="rounded-xl bg-white/70 hover:bg-white/90 shrink-0"
+            className="rounded-xl bg-white/70 hover:bg-white/90 w-full sm:w-auto"
           >
-            <Link href="/reminders/new" className="flex items-center gap-2">
+            <Link href="/reminders/new" className="flex items-center justify-center gap-2">
               <Plus className="h-4 w-4" />
               New Reminder
             </Link>
@@ -135,9 +135,9 @@ export async function ReminderList({ limit = 3 }: { limit?: number }) {
         </div>
 
         {/* panel interno para que nada sobresalga */}
-        <div className="mt-4 rounded-3xl bg-white/45 ring-1 ring-black/10 p-5 overflow-hidden">
+        <div className="mt-4 rounded-2xl sm:rounded-3xl bg-white/45 ring-1 ring-black/10 p-3 sm:p-5 overflow-hidden">
           {reminders.length === 0 ? (
-            <p className="text-sm text-neutral-700">
+            <p className="p-4 text-sm text-neutral-700 text-center">
               No reminders yet. Add one to stay connected.
             </p>
           ) : (
@@ -153,15 +153,15 @@ export async function ReminderList({ limit = 3 }: { limit?: number }) {
                   <Link
                     key={r.id}
                     href={`/reminders/${r.id}/edit`}
-                    className="block rounded-2xl bg-white/85 ring-1 ring-black/10 p-4 shadow-sm hover:shadow-md transition-all overflow-hidden"
+                    className="block rounded-xl sm:rounded-2xl bg-white/85 ring-1 ring-black/10 p-3 sm:p-4 shadow-sm hover:shadow-md transition-all overflow-hidden"
                     title="Edit reminder"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-neutral-900 truncate">
+                      <div className="min-w-0 w-full">
+                        <p className="font-bold text-neutral-900 truncate">
                           {r.message?.trim() || "(no message)"}
                         </p>
-                        <p className="mt-1 text-sm text-neutral-700 truncate">
+                        <p className="text-xs sm:text-sm text-neutral-700 truncate font-medium">
                           {name}
                         </p>
 
@@ -197,9 +197,9 @@ export async function ReminderList({ limit = 3 }: { limit?: number }) {
 export function ReminderListSkeleton() {
   return (
     <div className="rounded-2xl ring-1 ring-black/5 bg-[#CFF5E7] animate-pulse overflow-hidden">
-      <div className="p-6">
-        <div className="h-10 w-64 rounded-xl bg-white/40" />
-        <div className="mt-4 h-24 rounded-2xl bg-white/35" />
+      <div className="p-4 sm:p-6">
+        <div className="h-10 w-full sm:w-64 rounded-xl bg-white/40" />
+        <div className="mt-4 h-32 rounded-2xl bg-white/35" />
       </div>
     </div>
   );

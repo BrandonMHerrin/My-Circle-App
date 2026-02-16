@@ -36,10 +36,8 @@ export default async function EditInteractionPage({
         tiltIndex={2}
         className="mt-6 bg-sky-100/70 ring-1 ring-sky-200"
       >
-        <CardContent className="mt-2">
-          <div className="rounded-2xl bg-white/80 ring-1 ring-black/10 p-6 shadow-sm">
-            <EditInteraction id={safeId} />
-          </div>
+        <CardContent className="p-4 sm:p-6">
+          <EditInteraction id={safeId} />
         </CardContent>
       </StickerCard>
     </>

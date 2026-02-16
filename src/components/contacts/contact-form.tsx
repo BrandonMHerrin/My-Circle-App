@@ -12,7 +12,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CardContent, CardFooter } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -22,8 +21,6 @@ import {
 } from "@/components/ui/select";
 import { FormField } from "../ui/formField";
 
-// ✅ Sticker UI
-import { StickerCard } from "@/components/notebook/sticker-card";
 
 export type ContactFormData = z.infer<typeof contactCreateSchema>;
 
@@ -115,9 +112,9 @@ export default function ContactForm({
         console.error("[ContactForm] Submit error:", err);
         throw new Error(
           err.error ??
-            (res.status === 401
-              ? "Unauthorized: Please login again"
-              : "Failed to submit contact")
+          (res.status === 401
+            ? "Unauthorized: Please login again"
+            : "Failed to submit contact")
         );
       }
 
@@ -132,171 +129,169 @@ export default function ContactForm({
   }
 
   return (
-    <StickerCard tone="lemon" tiltIndex={1} className="p-6">
-      {/* panel blanco interior */}
-      <div className="rounded-2xl bg-white/80 ring-1 ring-black/10 shadow-sm">
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6 p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* First Name */}
-              <FormField
-                id="fname"
-                label="First Name"
-                error={form.formState.errors.fname}
-              >
-                <Input
-                  id="fname"
-                  {...form.register("fname")}
-                  placeholder="John"
-                />
-              </FormField>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* First Name */}
+        <FormField
+          id="fname"
+          label="First Name"
+          error={form.formState.errors.fname}
+        >
+          <Input
+            id="fname"
+            className="bg-white/50"
+            {...form.register("fname")}
+            placeholder="John"
+          />
+        </FormField>
 
-              {/* Last Name */}
-              <FormField
-                id="lname"
-                label="Last Name"
-                error={form.formState.errors.lname}
-              >
-                <Input
-                  id="lname"
-                  {...form.register("lname")}
-                  placeholder="Doe"
-                />
-              </FormField>
+        {/* Last Name */}
+        <FormField
+          id="lname"
+          label="Last Name"
+          error={form.formState.errors.lname}
+        >
+          <Input
+            id="lname"
+            className="bg-white/50"
+            {...form.register("lname")}
+            placeholder="Doe"
+          />
+        </FormField>
 
-              {/* Email */}
-              <FormField
-                id="email"
-                label="Email"
-                error={form.formState.errors.email}
-              >
-                <Input
-                  id="email"
-                  {...form.register("email")}
-                  placeholder="john@mail.com"
-                />
-              </FormField>
+        {/* Email */}
+        <FormField
+          id="email"
+          label="Email"
+          error={form.formState.errors.email}
+        >
+          <Input
+            id="email"
+            className="bg-white/50"
+            {...form.register("email")}
+            placeholder="john@mail.com"
+          />
+        </FormField>
 
-              {/* Phone */}
-              <FormField
-                id="phone"
-                label="Phone Number"
-                error={form.formState.errors.phone}
-              >
-                <Input
-                  id="phone"
-                  {...form.register("phone")}
-                  placeholder="+1 (555) 000-0000"
-                />
-              </FormField>
+        {/* Phone */}
+        <FormField
+          id="phone"
+          label="Phone Number"
+          error={form.formState.errors.phone}
+        >
+          <Input
+            id="phone"
+            className="bg-white/50"
+            {...form.register("phone")}
+            placeholder="+1 (555) 000-0000"
+          />
+        </FormField>
 
-              {/* Relationship */}
-              <FormField
-                id="relationship"
-                label="Relationship"
-                error={form.formState.errors.relationship}
-              >
-                <Select
-                  value={form.watch("relationship") ?? "_"}
-                  onValueChange={(value) =>
-                    form.setValue(
-                      "relationship",
-                      value === "_"
-                        ? null
-                        : (value as ContactFormData["relationship"])
-                    )
-                  }
-                >
-                  <SelectTrigger id="relationship" className="w-full">
-                    <SelectValue placeholder="Select relationship" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_">Select relationship</SelectItem>
-                    <SelectItem value="family">Family</SelectItem>
-                    <SelectItem value="friend">Friend</SelectItem>
-                    <SelectItem value="colleague">Colleague</SelectItem>
-                    <SelectItem value="acquaintance">Acquaintance</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
+        {/* Relationship */}
+        <FormField
+          id="relationship"
+          label="Relationship"
+          error={form.formState.errors.relationship}
+        >
+          <Select
+            value={form.watch("relationship") ?? "_"}
+            onValueChange={(value) =>
+              form.setValue(
+                "relationship",
+                value === "_"
+                  ? null
+                  : (value as ContactFormData["relationship"])
+              )
+            }
+          >
+            <SelectTrigger id="relationship" className="w-full bg-white/50">
+              <SelectValue placeholder="Select relationship" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_">Select relationship</SelectItem>
+              <SelectItem value="family">Family</SelectItem>
+              <SelectItem value="friend">Friend</SelectItem>
+              <SelectItem value="colleague">Colleague</SelectItem>
+              <SelectItem value="acquaintance">Acquaintance</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
 
-              {/* DOB */}
-              <FormField id="dob" label="Birthday" error={form.formState.errors.dob}>
-                <Input
-                  id="dob"
-                  {...form.register("dob")}
-                  placeholder="1990-01-01"
-                />
-              </FormField>
-            </div>
+        {/* DOB */}
+        <FormField id="dob" label="Birthday" error={form.formState.errors.dob}>
+          <Input
+            id="dob"
+            className="bg-white/50"
+            {...form.register("dob")}
+            placeholder="1990-01-01"
+          />
+        </FormField>
+      </div>
 
-            {/* Notes */}
-            <FormField
-              id="notes"
-              label="Personal Notes"
-              error={form.formState.errors.notes}
-            >
-              <Textarea
-                id="notes"
-                placeholder="How did you meet? Important facts..."
-                className="resize-none"
-                {...form.register("notes")}
-              />
-            </FormField>
-          </CardContent>
+      {/* Notes */}
+      <FormField
+        id="notes"
+        label="Personal Notes"
+        error={form.formState.errors.notes}
+      >
+        <Textarea
+          id="notes"
+          placeholder="How did you meet? Important facts..."
+          className="resize-none min-h-[120px] bg-white/50"
+          {...form.register("notes")}
+        />
+      </FormField>
 
-          <CardFooter className="flex flex-col gap-3 sm:flex-row sm:justify-between border-t px-6 py-5 bg-white/70">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-neutral-200">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="w-full sm:w-auto font-medium"
+        >
+          Cancel
+        </Button>
+
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          {contactId && (
             <Button
               type="button"
-              variant="ghost"
-              onClick={() => router.back()}
+              variant="destructive"
               disabled={submitting}
-              className="rounded-xl"
+              className="w-full sm:w-auto min-w-32"
+              onClick={handleDelete}
             >
-              Cancel
-            </Button>
-
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-              {contactId && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={submitting}
-                  className="rounded-xl"
-                  onClick={handleDelete}
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    "Delete Contact"
-                  )}
-                </Button>
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Contact"
               )}
+            </Button>
+          )}
 
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="rounded-xl bg-[#2D2A7A] text-white hover:bg-[#231f63]"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : contactId ? (
-                  "Save Changes"
-                ) : (
-                  "Create Contact"
-                )}
-              </Button>
-            </div>
-          </CardFooter>
-        </form>
+          <Button
+            type="submit"
+            disabled={submitting}
+            className="w-full sm:w-auto min-w-32 font-bold bg-[#2D2A7A] hover:bg-[#231f63]"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : contactId ? (
+              "Save Changes"
+            ) : (
+              "Create Contact"
+            )}
+          </Button>
+        </div>
       </div>
-    </StickerCard>
+    </form>
   );
 }

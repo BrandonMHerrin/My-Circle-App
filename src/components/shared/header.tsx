@@ -13,40 +13,39 @@ type HeaderProps = {
 
 export default function Header({ title, subtitle, backHref, rightTop }: HeaderProps) {
   return (
-    <div className="relative mb-6">
-      {/* ✅ esquina superior derecha */}
-      {rightTop ? (
-        <div className="absolute right-0 top-0 flex items-center justify-end">
-          {rightTop}
-        </div>
-      ) : null}
-
+    <div className="relative mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       {/* línea roja */}
       <div className="absolute -top-4 left-0">
         <div className="h-[3px] w-28 rounded-full bg-red-500" />
       </div>
 
-      {/* back */}
-      {backHref ? (
-        <div className="mb-2">
-          <Button asChild variant="ghost" className="gap-2 px-0">
-            <Link href={backHref}>
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Link>
-          </Button>
-        </div>
-      ) : null}
+      <div className="space-y-1 max-w-2xl">
+        {/* back */}
+        {backHref ? (
+          <div className="mb-2">
+            <Button asChild variant="ghost" className="gap-2 px-0 h-auto py-1 hover:bg-transparent -ml-1">
+              <Link href={backHref}>
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Link>
+            </Button>
+          </div>
+        ) : null}
 
-      {/* padding-right para que no choque con rightTop */}
-      <div className="pt-1 pr-44">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-900">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900">
           {title}
         </h1>
         {subtitle ? (
-          <p className="mt-1 text-sm sm:text-base text-neutral-600">{subtitle}</p>
+          <p className="text-base sm:text-lg text-neutral-600 font-medium">{subtitle}</p>
         ) : null}
       </div>
+
+      {/* rightTop */}
+      {rightTop ? (
+        <div className="flex items-center sm:justify-end">
+          {rightTop}
+        </div>
+      ) : null}
     </div>
   );
 }

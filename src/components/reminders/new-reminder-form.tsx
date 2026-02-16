@@ -97,10 +97,10 @@ export default function NewReminderForm({
         const list: Contact[] = Array.isArray(data?.data)
           ? data.data
           : Array.isArray(data?.contacts)
-          ? data.contacts
-          : Array.isArray(data)
-          ? data
-          : [];
+            ? data.contacts
+            : Array.isArray(data)
+              ? data
+              : [];
 
         if (!cancelled) setContacts(list);
       } catch (e: any) {
@@ -149,160 +149,158 @@ export default function NewReminderForm({
   };
 
   return (
-    <Card className="shadow-lg border-muted/50">
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <CardContent className="space-y-6 pt-6">
-          {/* ✅ MISMO layout del Edit: 2 columnas en lg, calendario a la derecha */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            {/* LEFT COLUMN */}
-            <div className="space-y-5">
-              {/* Contact */}
-              <FormField
-                id="contact_id"
-                label="Contact"
-                error={form.formState.errors.contact_id}
-              >
-                <Controller
-                  control={form.control}
-                  name="contact_id"
-                  render={({ field }) => (
-                    <Select
-                      value={field.value || "_"}
-                      onValueChange={(v) => field.onChange(v === "_" ? "" : v)}
-                      disabled={loadingContacts || !!contactsError}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue
-                          placeholder={
-                            loadingContacts
-                              ? "Loading contacts..."
-                              : contactsError
-                              ? "Could not load contacts"
-                              : "Select a contact"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="_">Select a contact</SelectItem>
-                        {contactOptions.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-
-                {contactsError && (
-                  <p className="mt-2 text-sm text-rose-600">{contactsError}</p>
-                )}
-              </FormField>
-
-              {/* Message + Type */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  id="message"
-                  label="Message"
-                  error={form.formState.errors.message}
-                >
-                  <Input
-                    {...form.register("message")}
-                    placeholder="Enter reminder message"
-                  />
-                </FormField>
-
-                <FormField
-                  id="reminder_type"
-                  label="Reminder Type"
-                  error={form.formState.errors.reminder_type}
-                >
-                  <Controller
-                    control={form.control}
-                    name="reminder_type"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select reminder type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {reminderTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type
-                                .replace("_", " ")
-                                .replace(/\b\w/g, (c) => c.toUpperCase())}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </FormField>
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN — Calendar (igual al Edit) */}
-            <div className="space-y-2 self-start lg:pl-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-neutral-900">
-                  Reminder Date
-                </p>
-              </div>
-
-              <FormField
-                id="reminder_date"
-                label=""
-                error={form.formState.errors.reminder_date}
-              >
-                <Controller
-                  control={form.control}
-                  name="reminder_date"
-                  render={({ field }) => (
-                    <div className="rounded-2xl bg-white/85 ring-1 ring-black/10 p-3 shadow-sm w-fit max-w-full overflow-x-auto">
-                      <Calendar
-                        mode="single"
-                        selected={field.value ?? undefined}
-                        onSelect={(d) => field.onChange(d ?? null)}
-                      />
-                    </div>
-                  )}
-                />
-              </FormField>
-
-              <p className="text-xs text-neutral-600">
-                Pick a date for the reminder.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-
-        {/* ✅ Footer igual al Edit (responsive) */}
-        <CardFooter className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between border-t mt-4 p-6 bg-muted/40">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => router.back()}
-            disabled={submitting}
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* LEFT COLUMN */}
+        <div className="space-y-5">
+          {/* Contact */}
+          <FormField
+            id="contact_id"
+            label="Contact"
+            error={form.formState.errors.contact_id}
           >
-            Cancel
-          </Button>
+            <Controller
+              control={form.control}
+              name="contact_id"
+              render={({ field }) => (
+                <Select
+                  value={field.value || "_"}
+                  onValueChange={(v) => field.onChange(v === "_" ? "" : v)}
+                  disabled={loadingContacts || !!contactsError}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue
+                      placeholder={
+                        loadingContacts
+                          ? "Loading contacts..."
+                          : contactsError
+                            ? "Could not load contacts"
+                            : "Select a contact"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_">Select a contact</SelectItem>
+                    {contactOptions.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
 
-          <Button
-            type="submit"
-            disabled={submitting || !form.formState.isValid}
-            className="min-w-32"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              "Create Reminder"
+            {contactsError && (
+              <p className="mt-2 text-sm text-rose-600">{contactsError}</p>
             )}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+          </FormField>
+
+          {/* Message + Type */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              id="message"
+              label="Message"
+              error={form.formState.errors.message}
+            >
+              <Input
+                {...form.register("message")}
+                placeholder="Enter reminder message"
+              />
+            </FormField>
+
+            <FormField
+              id="reminder_type"
+              label="Reminder Type"
+              error={form.formState.errors.reminder_type}
+            >
+              <Controller
+                control={form.control}
+                name="reminder_type"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select reminder type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {reminderTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type
+                            .replace("_", " ")
+                            .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN — Calendar */}
+        <div className="space-y-2 self-start lg:pl-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-neutral-900">
+              Reminder Date
+            </p>
+          </div>
+
+          <FormField
+            id="reminder_date"
+            label=""
+            error={form.formState.errors.reminder_date}
+          >
+            <Controller
+              control={form.control}
+              name="reminder_date"
+              render={({ field }) => (
+                <div className="flex justify-center lg:justify-start">
+                  <div className="rounded-2xl bg-white/85 ring-1 ring-black/10 p-2 shadow-sm w-full max-w-[320px] sm:max-w-none w-auto overflow-hidden sm:overflow-visible scale-90 sm:scale-100 origin-top">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ?? undefined}
+                      onSelect={(d) => field.onChange(d ?? null)}
+                      className="mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
+            />
+          </FormField>
+
+          <p className="text-xs text-neutral-600">
+            Pick a date for the reminder.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-neutral-200">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="w-full sm:w-auto font-medium"
+        >
+          Cancel
+        </Button>
+
+        <Button
+          type="submit"
+          disabled={submitting || !form.formState.isValid}
+          className="w-full sm:w-auto min-w-32 font-bold"
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Reminder"
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }

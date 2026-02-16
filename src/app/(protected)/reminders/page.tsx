@@ -18,13 +18,11 @@ export default async function RemindersPage() {
         backHref="/dashboard"   // ✅ botón con flecha
       />
 
-      <StickerCard tone="rose" tiltIndex={3} className="mt-6">
-        <CardContent className="mt-2">
-          <Suspense fallback={<ReminderListSkeleton />}>
-            <ReminderList limit={50} />
-          </Suspense>
-        </CardContent>
-      </StickerCard>
+      <div className="mt-6">
+        <Suspense fallback={<ReminderListSkeleton />}>
+          <ReminderList limit={50} />
+        </Suspense>
+      </div>
     </>
   );
 }

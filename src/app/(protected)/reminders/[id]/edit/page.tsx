@@ -53,13 +53,11 @@ export default async function EditReminderPage({
         tiltIndex={2}
         className="mt-6 bg-rose-100/80 ring-1 ring-rose-300"
       >
-        <CardContent className="mt-2">
-          <div className="rounded-2xl bg-white/85 ring-1 ring-black/10 p-6 shadow-sm">
-            <ReminderForm
-              initialData={formattedReminder}
-              reminderId={id}
-            />
-          </div>
+        <CardContent className="p-3 sm:p-6">
+          <ReminderForm
+            initialData={formattedReminder}
+            reminderId={id}
+          />
         </CardContent>
       </StickerCard>
     </>

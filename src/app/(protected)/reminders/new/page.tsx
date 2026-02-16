@@ -28,11 +28,8 @@ export default function NewReminderPage() {
         tiltIndex={2}
         className="mt-6 bg-rose-100/70 ring-1 ring-rose-200"
       >
-
-        <CardContent className="mt-2">
-          <div className="rounded-2xl bg-white/80 ring-1 ring-black/10 p-6 shadow-sm">
-            <NewReminderForm />
-          </div>
+        <CardContent className="p-3 sm:p-6">
+          <NewReminderForm />
         </CardContent>
       </StickerCard>
     </>

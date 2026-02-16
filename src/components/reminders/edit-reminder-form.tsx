@@ -121,174 +121,174 @@ export default function EditReminderForm({
   };
 
   return (
-    <Card className="shadow-lg border-muted/50">
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <CardContent className="space-y-6 pt-6">
-          {/* ✅ Nuevo layout: 2 columnas en lg, calendario alineado arriba */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            {/* LEFT COLUMN */}
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Message */}
-                <FormField
-                  id="message"
-                  label="Message"
-                  error={form.formState.errors.message}
-                >
-                  <Input
-                    {...form.register("message")}
-                    placeholder="Enter reminder message"
-                  />
-                </FormField>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      {/* ✅ Nuevo layout: 2 columnas en lg, calendario alineado arriba */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* LEFT COLUMN */}
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Message */}
+            <FormField
+              id="message"
+              label="Message"
+              error={form.formState.errors.message}
+            >
+              <Input
+                {...form.register("message")}
+                placeholder="Enter reminder message"
+              />
+            </FormField>
 
-                {/* Reminder Type */}
-                <FormField
-                  id="reminder_type"
-                  label="Reminder Type"
-                  error={form.formState.errors.reminder_type}
-                >
-                  <Controller
-                    control={form.control}
-                    name="reminder_type"
-                    render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select reminder type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {reminderTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type
-                                .replace("_", " ")
-                                .replace(/\b\w/g, (c) => c.toUpperCase())}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </FormField>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Status */}
-                <FormField
-                  id="status"
-                  label="Status"
-                  error={form.formState.errors.status}
-                >
-                  <Controller
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <Select
-                        value={field.value ?? "_"}
-                        onValueChange={(v) =>
-                          field.onChange(v === "_" ? null : v)
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="_">Select status</SelectItem>
-                          {reminderStatuses.map((s) => (
-                            <SelectItem key={s} value={s}>
-                              {s.replace(/\b\w/g, (c) => c.toUpperCase())}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </FormField>
-
-                {/* Spacer para mantener grid parejito */}
-                <div className="hidden md:block" />
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN — Calendar */}
-            <div className="space-y-2 self-start lg:pl-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-neutral-900">
-                  Reminder Date
-                </p>
-              </div>
-
-              <FormField
-                id="reminder_date"
-                label=""
-                error={form.formState.errors.reminder_date}
-              >
-                <Controller
-                  control={form.control}
-                  name="reminder_date"
-                  render={({ field }) => (
-                    <div className="rounded-2xl bg-white/85 ring-1 ring-black/10 p-3 shadow-sm w-fit max-w-full overflow-x-auto">
-                      <Calendar
-                        mode="single"
-                        selected={field.value ?? undefined}
-                        onSelect={field.onChange}
-                      />
-                    </div>
-                  )}
-                />
-              </FormField>
-
-              <p className="text-xs text-neutral-600">
-                Pick a date for the reminder.
-              </p>
-            </div>
+            {/* Reminder Type */}
+            <FormField
+              id="reminder_type"
+              label="Reminder Type"
+              error={form.formState.errors.reminder_type}
+            >
+              <Controller
+                control={form.control}
+                name="reminder_type"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select reminder type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {reminderTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type
+                            .replace("_", " ")
+                            .replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </FormField>
           </div>
-        </CardContent>
 
-        {/* ✅ Footer más limpio y responsive */}
-        <CardFooter className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between border-t mt-4 p-6 bg-muted/40">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Status */}
+            <FormField
+              id="status"
+              label="Status"
+              error={form.formState.errors.status}
+            >
+              <Controller
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? "_"}
+                    onValueChange={(v) =>
+                      field.onChange(v === "_" ? null : v)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_">Select status</SelectItem>
+                      {reminderStatuses.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s.replace(/\b\w/g, (c) => c.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </FormField>
+
+            {/* Spacer para mantener grid parejito */}
+            <div className="hidden md:block" />
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN — Calendar */}
+        <div className="space-y-2 self-start lg:pl-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-neutral-900">
+              Reminder Date
+            </p>
+          </div>
+
+          <FormField
+            id="reminder_date"
+            label=""
+            error={form.formState.errors.reminder_date}
+          >
+            <Controller
+              control={form.control}
+              name="reminder_date"
+              render={({ field }) => (
+                <div className="flex justify-center lg:justify-start">
+                  <div className="rounded-2xl bg-white/85 ring-1 ring-black/10 p-2 shadow-sm w-full max-w-[320px] sm:max-w-none w-auto overflow-hidden sm:overflow-visible scale-90 sm:scale-100 origin-top">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ?? undefined}
+                      onSelect={field.onChange}
+                      className="mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
+            />
+          </FormField>
+
+          <p className="text-xs text-neutral-600">
+            Pick a date for the reminder.
+          </p>
+        </div>
+      </div>
+
+      {/* ✅ Footer más limpio y responsive */}
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-neutral-200">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="w-full sm:w-auto font-medium"
+        >
+          Cancel
+        </Button>
+
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <Button
             type="button"
-            variant="ghost"
-            onClick={() => router.back()}
+            variant="destructive"
             disabled={submitting}
+            onClick={handleDelete}
+            className="w-full sm:w-auto min-w-32"
           >
-            Cancel
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Reminder"
+            )}
           </Button>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={submitting}
-              onClick={handleDelete}
-              className="min-w-32"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete Reminder"
-              )}
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={submitting || !form.formState.isValid}
-              className="min-w-32"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
-          </div>
-        </CardFooter>
-      </form>
-    </Card>
+          <Button
+            type="submit"
+            disabled={submitting || !form.formState.isValid}
+            className="w-full sm:w-auto min-w-32 font-bold"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+        </div>
+      </div>
+    </form>
   );
 }

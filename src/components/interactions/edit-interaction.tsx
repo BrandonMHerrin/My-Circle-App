@@ -103,8 +103,8 @@ export default function EditInteraction({ id }: { id: string }) {
         const list: Contact[] = Array.isArray(contactsJson?.data)
           ? contactsJson.data
           : Array.isArray(contactsJson)
-          ? contactsJson
-          : [];
+            ? contactsJson
+            : [];
 
         if (cancelled) return;
 
@@ -183,7 +183,7 @@ export default function EditInteraction({ id }: { id: string }) {
           value={form.watch("contact_id") || "_"}
           onValueChange={(v) => form.setValue("contact_id", v === "_" ? "" : v)}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full bg-white/50">
             <SelectValue placeholder="Select a contact" />
           </SelectTrigger>
           <SelectContent>
@@ -198,16 +198,16 @@ export default function EditInteraction({ id }: { id: string }) {
       </FormField>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField id="interaction_date" label="Date">
-          <Input type="date" {...form.register("interaction_date")} />
+        <FormField id="interaction_date" label="Date" error={form.formState.errors.interaction_date}>
+          <Input type="date" className="bg-white/50" {...form.register("interaction_date")} />
         </FormField>
 
-        <FormField id="type" label="Type">
+        <FormField id="type" label="Type" error={form.formState.errors.type}>
           <Select
             value={form.watch("type")}
             onValueChange={(v) => form.setValue("type", v as any)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="bg-white/50">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -220,14 +220,15 @@ export default function EditInteraction({ id }: { id: string }) {
           </Select>
         </FormField>
 
-        <FormField id="location" label="Location (optional)">
-          <Input {...form.register("location")} />
+        <FormField id="location" label="Location (optional)" error={form.formState.errors.location}>
+          <Input className="bg-white/50" {...form.register("location")} />
         </FormField>
 
-        <FormField id="duration_minutes" label="Duration (minutes)">
+        <FormField id="duration_minutes" label="Duration (minutes)" error={form.formState.errors.duration_minutes}>
           <Input
             type="number"
             min={0}
+            className="bg-white/50"
             value={form.watch("duration_minutes") ?? ""}
             onChange={(e) =>
               form.setValue(
@@ -239,16 +240,22 @@ export default function EditInteraction({ id }: { id: string }) {
         </FormField>
       </div>
 
-      <FormField id="notes" label="Notes">
-        <Textarea {...form.register("notes")} />
+      <FormField id="notes" label="Notes" error={form.formState.errors.notes}>
+        <Textarea className="resize-none min-h-[120px] bg-white/50" {...form.register("notes")} />
       </FormField>
 
-      <div className="flex justify-between border-t pt-4">
-        <Button type="button" variant="ghost" onClick={() => router.back()}>
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-neutral-200">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="w-full sm:w-auto font-medium"
+        >
           Cancel
         </Button>
 
-        <Button type="submit" disabled={submitting}>
+        <Button type="submit" disabled={submitting} className="w-full sm:w-auto min-w-32 font-bold">
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

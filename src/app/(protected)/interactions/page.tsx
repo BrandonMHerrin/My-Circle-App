@@ -28,11 +28,9 @@ export default function InteractionsPage() {
       </div>
 
       <section className="space-y-4">
-        {/* Contenedor tipo sticker, como dashboard */}
-        <StickerCard tone="sky" tiltIndex={3} className="p-6">
-          <div className="rounded-2xl bg-white/75 ring-1 ring-black/10 p-5">
-            <InteractionList />
-          </div>
+        {/* Contenedor tipo sticker, sin nesting extra */}
+        <StickerCard tone="sky" tiltIndex={3} className="p-4 sm:p-6">
+          <InteractionList />
         </StickerCard>
       </section>
     </>
