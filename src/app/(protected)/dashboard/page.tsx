@@ -1,5 +1,6 @@
 // src/app/(protected)/dashboard/page.tsx
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Users, Activity, LogOut } from "lucide-react";
 import Header from "@/components/shared/header";
@@ -27,7 +28,12 @@ import { AISugestions } from "@/components/dashboard/ai-insights";
 import { AISuggestionsSkeleton } from "@/components/dashboard/ai-insights-feed";
 
 export default async function DashboardPage() {
-  const userName = "Alejandro Moncada";
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const userName = user?.user_metadata.full_name || "User";
 
   return (
     <>
