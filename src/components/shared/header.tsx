@@ -1,43 +1,51 @@
+// src/components/shared/header.tsx
+import React from "react";
 import Link from "next/link";
-import { UserMenu } from "./user-menu";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
-interface HeaderProps {
+type HeaderProps = {
   title: string;
   subtitle?: string;
-  backHref?: string; // optional back link
-}
+  backHref?: string;
+  rightTop?: React.ReactNode; // ✅ nuevo
+};
 
-export default function Header({
-  title,
-  subtitle,
-  backHref,
-}: HeaderProps) {
+export default function Header({ title, subtitle, backHref, rightTop }: HeaderProps) {
   return (
-    <header className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
-      <div className="space-y-1">
-        {backHref && (
-          <Link
-            href={backHref}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
-        )}
-
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {title}
-        </h1>
-
-        {subtitle && (
-          <p className="text-sm text-muted-foreground">
-            {subtitle}
-          </p>
-        )}
+    <div className="relative mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      {/* línea roja */}
+      <div className="absolute -top-4 left-0">
+        <div className="h-[3px] w-28 rounded-full bg-red-500" />
       </div>
 
-      <UserMenu />
-    </header>
+      <div className="space-y-1 max-w-2xl">
+        {/* back */}
+        {backHref ? (
+          <div className="mb-2">
+            <Button asChild variant="ghost" className="gap-2 px-0 h-auto py-1 hover:bg-transparent -ml-1">
+              <Link href={backHref}>
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Link>
+            </Button>
+          </div>
+        ) : null}
+
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900">
+          {title}
+        </h1>
+        {subtitle ? (
+          <p className="text-base sm:text-lg text-neutral-600 font-medium">{subtitle}</p>
+        ) : null}
+      </div>
+
+      {/* rightTop */}
+      {rightTop ? (
+        <div className="flex items-center sm:justify-end">
+          {rightTop}
+        </div>
+      ) : null}
+    </div>
   );
 }
