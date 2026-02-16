@@ -1,25 +1,32 @@
 "use client";
 
 import { z } from "zod";
-import {
-  reminderPatchSchemaForForm,
-  reminderTypeEnum,
-  reminderStatusEnum,
-} from "@/lib/validation/reminder.schema";
+import { reminderPatchSchemaForForm } from "@/lib/validation/reminder.schema";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { FormField } from "../ui/formField";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 
 export type ReminderFormData = z.infer<typeof reminderPatchSchemaForForm>;
+
 const reminderTypes = ["birthday", "follow_up", "custom", "anniversary"] as const;
 const reminderStatuses = ["active", "completed", "dismissed"] as const;
 
@@ -38,7 +45,9 @@ export default function EditReminderForm({
     mode: "onChange",
     defaultValues: {
       ...initialData,
-      reminder_date: initialData.reminder_date ? new Date(initialData.reminder_date) : null,
+      reminder_date: initialData.reminder_date
+        ? new Date(initialData.reminder_date)
+        : null,
     },
   });
 
@@ -47,21 +56,30 @@ export default function EditReminderForm({
     if (!initialData) return;
     form.reset({
       ...initialData,
-      reminder_date: initialData.reminder_date ? new Date(initialData.reminder_date) : null,
+      reminder_date: initialData.reminder_date
+        ? new Date(initialData.reminder_date)
+        : null,
     });
   }, [initialData, form]);
 
   async function handleDelete() {
     setSubmitting(true);
-    const confirmed = window.confirm("Are you sure you want to delete this reminder?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this reminder?"
+    );
     if (!confirmed) return setSubmitting(false);
 
     try {
-      const res = await fetch(`/api/reminders/${reminderId}`, { method: "DELETE", credentials: "include" });
+      const res = await fetch(`/api/reminders/${reminderId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Failed to delete reminder");
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any)?.error ?? "Failed to delete reminder");
       }
+
       router.push("/dashboard");
       router.refresh();
     } catch (err: any) {
@@ -75,19 +93,23 @@ export default function EditReminderForm({
   const onSubmit: SubmitHandler<ReminderFormData> = async (data) => {
     setSubmitting(true);
     try {
-      const payload = { ...data, reminder_date: data.reminder_date
-        ? data.reminder_date.toISOString()
-        : null, };
+      const payload = {
+        ...data,
+        reminder_date: data.reminder_date ? data.reminder_date.toISOString() : null,
+      };
+
       const res = await fetch(`/api/reminders/${reminderId}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
+
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Failed to update reminder");
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any)?.error ?? "Failed to update reminder");
       }
+
       router.push("/dashboard");
       router.refresh();
     } catch (err: any) {
@@ -99,27 +121,30 @@ export default function EditReminderForm({
   };
 
   return (
-    <Card className="shadow-lg border-muted/50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Save className="h-5 w-5 text-primary" />
-          Edit Reminder
-        </CardTitle>
-        <CardDescription>
-          Update the details of your reminder.
-        </CardDescription>
-      </CardHeader>
-
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <CardContent className="space-y-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      {/* ✅ Nuevo layout: 2 columnas en lg, calendario alineado arriba */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* LEFT COLUMN */}
+        <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Message */}
-            <FormField id="message" label="Message" error={form.formState.errors.message}>
-              <Input {...form.register("message")} placeholder="Enter reminder message" />
+            <FormField
+              id="message"
+              label="Message"
+              error={form.formState.errors.message}
+            >
+              <Input
+                {...form.register("message")}
+                placeholder="Enter reminder message"
+              />
             </FormField>
 
             {/* Reminder Type */}
-            <FormField id="reminder_type" label="Reminder Type" error={form.formState.errors.reminder_type}>
+            <FormField
+              id="reminder_type"
+              label="Reminder Type"
+              error={form.formState.errors.reminder_type}
+            >
               <Controller
                 control={form.control}
                 name="reminder_type"
@@ -131,7 +156,9 @@ export default function EditReminderForm({
                     <SelectContent>
                       {reminderTypes.map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                          {type
+                            .replace("_", " ")
+                            .replace(/\b\w/g, (c) => c.toUpperCase())}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -139,14 +166,25 @@ export default function EditReminderForm({
                 )}
               />
             </FormField>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Status */}
-            <FormField id="status" label="Status" error={form.formState.errors.status}>
+            <FormField
+              id="status"
+              label="Status"
+              error={form.formState.errors.status}
+            >
               <Controller
                 control={form.control}
                 name="status"
                 render={({ field }) => (
-                  <Select value={field.value ?? "_"} onValueChange={(v) => field.onChange(v === "_" ? null : v)}>
+                  <Select
+                    value={field.value ?? "_"}
+                    onValueChange={(v) =>
+                      field.onChange(v === "_" ? null : v)
+                    }
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -163,43 +201,94 @@ export default function EditReminderForm({
               />
             </FormField>
 
-            {/* Reminder Date */}
-            <FormField id="reminder_date" label="Reminder Date" error={form.formState.errors.reminder_date}>
-              <Controller
-                control={form.control}
-                name="reminder_date"
-                render={({ field }) => (
-                  <Calendar mode="single" selected={field.value ?? undefined} onSelect={field.onChange} />
-                )}
-              />
-            </FormField>
+            {/* Spacer para mantener grid parejito */}
+            <div className="hidden md:block" />
           </div>
-        </CardContent>
+        </div>
 
-        <CardFooter className="flex justify-between border-t mt-4 p-6 bg-muted/40">
-          <Button type="button" variant="ghost" onClick={() => router.back()} disabled={submitting}>
-            Cancel
-          </Button>
+        {/* RIGHT COLUMN — Calendar */}
+        <div className="space-y-2 self-start lg:pl-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-neutral-900">
+              Reminder Date
+            </p>
+          </div>
 
-          <Button type="button" variant="destructive" disabled={submitting} onClick={handleDelete} className="min-w-32">
+          <FormField
+            id="reminder_date"
+            label=""
+            error={form.formState.errors.reminder_date}
+          >
+            <Controller
+              control={form.control}
+              name="reminder_date"
+              render={({ field }) => (
+                <div className="flex justify-center lg:justify-start">
+                  <div className="rounded-2xl bg-white/85 ring-1 ring-black/10 p-2 shadow-sm w-full max-w-[320px] sm:max-w-none w-auto overflow-hidden sm:overflow-visible scale-90 sm:scale-100 origin-top">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ?? undefined}
+                      onSelect={field.onChange}
+                      className="mx-auto"
+                    />
+                  </div>
+                </div>
+              )}
+            />
+          </FormField>
+
+          <p className="text-xs text-neutral-600">
+            Pick a date for the reminder.
+          </p>
+        </div>
+      </div>
+
+      {/* ✅ Footer más limpio y responsive */}
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-6 border-t border-neutral-200">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="w-full sm:w-auto font-medium"
+        >
+          Cancel
+        </Button>
+
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={submitting}
+            onClick={handleDelete}
+            className="w-full sm:w-auto min-w-32"
+          >
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Deleting...
               </>
-            ) : "Delete Reminder"}
+            ) : (
+              "Delete Reminder"
+            )}
           </Button>
 
-          <Button type="submit" disabled={submitting || !form.formState.isValid} className="min-w-32">
+          <Button
+            type="submit"
+            disabled={submitting || !form.formState.isValid}
+            className="w-full sm:w-auto min-w-32 font-bold"
+          >
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
-            ) : "Save Changes"}
+            ) : (
+              "Save Changes"
+            )}
           </Button>
-        </CardFooter>
-      </form>
-    </Card>
+        </div>
+      </div>
+    </form>
   );
 }

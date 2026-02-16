@@ -1,4 +1,10 @@
 import Header from "@/components/shared/header";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
+import { StickerCard } from "@/components/notebook/sticker-card";
+import { CardContent } from "@/components/ui/card";
+
 import EditInteraction from "@/components/interactions/edit-interaction";
 
 export default async function EditInteractionPage({
@@ -6,14 +12,34 @@ export default async function EditInteractionPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // ✅ Next 16 (sync dynamic APIs): params llega como Promise
   const { id } = await params;
+  const safeId = String(id ?? "").trim();
 
   return (
     <>
-      <Header title="Edit Interaction" subtitle="Update your interaction details" backHref="/interactions" />
-      <section className="space-y-4">
-        <EditInteraction id={id} />
-      </section>
+      <Header
+        title="Edit Interaction"
+        subtitle="Update the interaction details"
+        backHref="/interactions"
+        rightTop={
+          <Link href="/dashboard">
+            <Button variant="outline" className="rounded-xl bg-white/70">
+              Go to Dashboard
+            </Button>
+          </Link>
+        }
+      />
+
+      <StickerCard
+        tone="sky"
+        tiltIndex={2}
+        className="mt-6 bg-sky-100/70 ring-1 ring-sky-200"
+      >
+        <CardContent className="p-4 sm:p-6">
+          <EditInteraction id={safeId} />
+        </CardContent>
+      </StickerCard>
     </>
   );
 }

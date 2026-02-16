@@ -1,111 +1,206 @@
-"use client";
-
-import { useEffect, useState } from "react";
+// src/components/reminders/reminder-list.tsx
 import Link from "next/link";
-import { Tables } from "@/lib/supabase/database.types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Bell, Plus, CalendarClock } from "lucide-react";
+import { StickerCard } from "@/components/notebook/sticker-card";
 import { Button } from "@/components/ui/button";
-import { Pencil, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/server";
 
-export default function RemindersList() {
-  const [items, setItems] = useState<Tables<"reminders">[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+type ReminderRow = {
+  id: string;
+  reminder_type: "birthday" | "follow_up" | "custom" | "anniversary";
+  status: "active" | "dismissed" | "completed";
+  message: string | null;
+  reminder_date: string;
+  contact?: {
+    id: string;
+    fname: string | null;
+    lname: string | null;
+  } | null;
+};
 
-  async function loadReminders() {
-    try {
-      setLoading(true);
-      setError(null);
+function prettyType(t: ReminderRow["reminder_type"]) {
+  return t.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
-      const res = await fetch("/api/reminders?limit=100&offset=0", {
-        credentials: "include",
-      });
+function formatDateTime(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-      if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(txt || "Failed to load reminders");
-      }
+function isPast(iso: string) {
+  const d = new Date(iso).getTime();
+  const now = Date.now();
+  return d < now;
+}
 
-      const data = await res.json();
-      const list =
-    Array.isArray(data?.reminders)
-    ? data.reminders
-    : Array.isArray(data?.data)
-    ? data.data
-    : Array.isArray(data)
-    ? data
-    : [];
+export async function ReminderList({ limit = 3 }: { limit?: number }) {
+  const supabase = await createClient();
 
-    setItems(list);
-    } catch (err: any) {
-      setError(err.message ?? "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
+  const { data, error } = await supabase
+    .from("reminders")
+    .select(
+      `
+      id,
+      reminder_type,
+      status,
+      message,
+      reminder_date,
+      contact:contacts (
+        id, fname, lname
+      )
+    `,
+    )
+    // ✅ mostrar todos los activos (no ocultar por fecha)
+    .not("status", "in", "(dismissed,completed)")
+    .order("reminder_date", { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    return (
+      <StickerCard tone="mint" tiltIndex={5} className="overflow-hidden">
+        <div className="p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 ring-1 ring-black/10">
+                <Bell className="h-5 w-5 text-neutral-800" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold text-neutral-900 truncate">
+                  Upcoming Reminders
+                </h3>
+                <p className="text-sm text-neutral-700 truncate">
+                  Stay on top of your follow-ups.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-xl bg-white/70 hover:bg-white/90 shrink-0"
+            >
+              <Link href="/reminders/new" className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                New Reminder
+              </Link>
+            </Button>
+          </div>
+
+          <p className="mt-4 text-sm text-rose-700">
+            Failed to load reminders: {error.message}
+          </p>
+        </div>
+      </StickerCard>
+    );
   }
 
-  useEffect(() => {
-    loadReminders();
-  }, []);
+  const reminders = (data ?? []) as ReminderRow[];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-start">
-        <Button asChild>
-          <Link href="/reminders/new" className="gap-2">
-            <Plus className="h-4 w-4" />
-            New Reminder
-          </Link>
-        </Button>
-      </div>
+    <StickerCard tone="mint" tiltIndex={5} className="overflow-hidden">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 ring-1 ring-black/10">
+              <Bell className="h-5 w-5 text-neutral-800" />
+            </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Reminders</CardTitle>
-        </CardHeader>
+            <div className="min-w-0">
+              <h3 className="text-lg sm:text-md font-semibold text-neutral-900">
+                Upcoming Reminders
+              </h3>
+              <p className="text-sm text-neutral-700 hidden sm:block">
+                Stay on top of your follow-ups.
+              </p>
+            </div>
+          </div>
 
-        <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : error ? (
-            <p className="text-sm text-red-500">{error}</p>
-          ) : items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No reminders found.
+          <Button
+            asChild
+            variant="outline"
+            className="rounded-xl bg-white/70 hover:bg-white/90 w-full sm:w-auto"
+          >
+            <Link href="/reminders/new" className="flex items-center justify-center gap-2">
+              <Plus className="h-4 w-4" />
+              New Reminder
+            </Link>
+          </Button>
+        </div>
+
+        {/* panel interno para que nada sobresalga */}
+        <div className="mt-4 rounded-2xl sm:rounded-3xl bg-white/45 ring-1 ring-black/10 p-3 sm:p-5 overflow-hidden">
+          {reminders.length === 0 ? (
+            <p className="p-4 text-sm text-neutral-700 text-center">
+              No reminders yet. Add one to stay connected.
             </p>
           ) : (
             <div className="space-y-3">
-              {items.map((reminder) => (
-                <div
-                  key={reminder.id}
-                  className="flex items-center justify-between border rounded-lg p-4"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {reminder.reminder_type?.replace("_", " ")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {reminder.message || "(no message)"}
-                    </p>
-                  </div>
+              {reminders.map((r) => {
+                const name =
+                  `${r.contact?.fname ?? ""} ${r.contact?.lname ?? ""}`.trim() ||
+                  "Contact";
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="gap-2"
+                const overdue = isPast(r.reminder_date);
+
+                return (
+                  <Link
+                    key={r.id}
+                    href={`/reminders/${r.id}/edit`}
+                    className="block rounded-xl sm:rounded-2xl bg-white/85 ring-1 ring-black/10 p-3 sm:p-4 shadow-sm hover:shadow-md transition-all overflow-hidden"
+                    title="Edit reminder"
                   >
-                    <Link href={`/reminders/${reminder.id}/edit`}>
-                      <Pencil className="h-4 w-4" />
-                      Edit
-                    </Link>
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 w-full">
+                        <p className="font-bold text-neutral-900 truncate">
+                          {r.message?.trim() || "(no message)"}
+                        </p>
+                        <p className="text-xs sm:text-sm text-neutral-700 truncate font-medium">
+                          {name}
+                        </p>
+
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-2 text-sm font-medium text-rose-700">
+                            <CalendarClock className="h-4 w-4" />
+                            {formatDateTime(r.reminder_date)}
+                          </span>
+
+                          <Badge variant="secondary" className="rounded-full">
+                            {prettyType(r.reminder_type)}
+                          </Badge>
+
+                          {overdue && (
+                            <span className="text-xs font-semibold text-rose-700">
+                              Overdue
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+    </StickerCard>
+  );
+}
+
+export function ReminderListSkeleton() {
+  return (
+    <div className="rounded-2xl ring-1 ring-black/5 bg-[#CFF5E7] animate-pulse overflow-hidden">
+      <div className="p-4 sm:p-6">
+        <div className="h-10 w-full sm:w-64 rounded-xl bg-white/40" />
+        <div className="mt-4 h-32 rounded-2xl bg-white/35" />
+      </div>
     </div>
   );
 }

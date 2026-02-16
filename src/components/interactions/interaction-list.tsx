@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Plus, ArrowLeft } from "lucide-react";
+import { Pencil, Trash2, Loader2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -83,7 +83,9 @@ export default function InteractionList() {
       const matchesType = typeFilter === "all" ? true : x.type === typeFilter;
 
       const contactName =
-        `${x.contact?.fname ?? ""} ${x.contact?.lname ?? ""}`.trim().toLowerCase();
+        `${x.contact?.fname ?? ""} ${x.contact?.lname ?? ""}`
+          .trim()
+          .toLowerCase();
 
       const notes = (x.notes ?? "").toLowerCase();
       const loc = (x.location ?? "").toLowerCase();
@@ -106,7 +108,6 @@ export default function InteractionList() {
     const ok = confirm("Delete this interaction?");
     if (!ok) return;
 
-    // Optimistic UI
     const prev = items;
     setItems((p) => p.filter((x) => x.id !== id));
 
@@ -123,7 +124,6 @@ export default function InteractionList() {
 
       router.refresh();
     } catch (e: any) {
-      // rollback
       setItems(prev);
       alert(e?.message ?? "Delete failed");
     }
@@ -131,107 +131,110 @@ export default function InteractionList() {
 
   return (
     <div className="space-y-4">
-      {/* top actions */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <Input
+            placeholder="Search notes, contacts..."
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="bg-white/50"
+          />
+        </div>
 
-        <Button asChild className="gap-2">
-          <Link href="/interactions/new">
-            <Plus className="h-4 w-4" />
-            Log Interaction
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-full sm:w-[140px] bg-white/50">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="call">Call</SelectItem>
+              <SelectItem value="meeting">Meeting</SelectItem>
+              <SelectItem value="email">Email</SelectItem>
+              <SelectItem value="text">Text</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            onClick={load}
+            disabled={loading}
+            className="bg-white/50 shrink-0"
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Interaction History</CardTitle>
-        </CardHeader>
+      {loading ? (
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
+        </div>
+      ) : err ? (
+        <p className="text-sm text-red-500 p-4 bg-red-50 rounded-xl">{err}</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-sm text-muted-foreground p-4 text-center">
+          No interactions found.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {filtered.map((x) => {
+            const contactLabel =
+              `${x.contact?.fname ?? ""} ${x.contact?.lname ?? ""}`.trim() ||
+              x.contact?.email ||
+              "Contact";
 
-        <CardContent className="space-y-4">
-          {/* filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Input
-              placeholder="Search notes..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="call">Call</SelectItem>
-                <SelectItem value="meeting">Meeting</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="text">Text</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" onClick={load} disabled={loading}>
-              Refresh
-            </Button>
-          </div>
-
-          {/* list */}
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : err ? (
-            <p className="text-sm text-red-500">{err}</p>
-          ) : filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No interactions found.</p>
-          ) : (
-            <div className="space-y-3">
-              {filtered.map((x) => {
-                const contactLabel =
-                  `${x.contact?.fname ?? ""} ${x.contact?.lname ?? ""}`.trim() ||
-                  x.contact?.email ||
-                  "Contact";
-
-                return (
-                  <div
-                    key={x.id}
-                    className="flex items-center justify-between rounded-lg border p-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold">
-                          {contactLabel} • {x.interaction_date}
-                        </p>
-                        <Badge variant="secondary">{x.type}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {x.notes || "(no notes)"}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" asChild className="gap-2">
-                        <Link href={`/interactions/${x.id}/edit`}>
-                          <Pencil className="h-4 w-4" />
-                          Edit
-                        </Link>
-                      </Button>
-
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => onDelete(x.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </Button>
-                    </div>
+            return (
+              <div
+                key={x.id}
+                className="group relative flex flex-col sm:flex-row sm:items-center justify-between rounded-2xl bg-white/80 ring-1 ring-black/5 p-4 shadow-sm hover:shadow-md transition-all gap-4"
+              >
+                <div className="min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-bold text-neutral-900 truncate">
+                      {contactLabel}
+                    </p>
+                    <Badge variant="secondary" className="bg-sky-100 text-sky-800 border-none px-2 py-0">
+                      {x.type}
+                    </Badge>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  <p className="text-xs font-semibold text-neutral-500">
+                    {x.interaction_date}
+                  </p>
+                  <p className="text-sm text-neutral-700 line-clamp-2">
+                    {x.notes || "(no notes)"}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-sky-50 text-sky-700 font-medium"
+                  >
+                    <Link href={`/interactions/${x.id}/edit`}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Edit
+                    </Link>
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 sm:flex-none h-9 rounded-xl hover:bg-rose-50 text-rose-600 font-medium"
+                    onClick={() => onDelete(x.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
