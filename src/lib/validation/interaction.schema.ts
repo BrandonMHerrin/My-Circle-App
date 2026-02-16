@@ -14,3 +14,21 @@ export const interactionCreateSchema = z.object({
 export type InteractionCreateInput = z.infer<typeof interactionCreateSchema>;
 
 export const interactionUpdateSchema = interactionCreateSchema.partial();
+
+export const interactionsListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  offset: z.coerce.number().int().min(0).default(0),
+  type: interactionTypeEnum.optional(),
+  contact_id: z.string().uuid().optional(),
+  start: z.string().datetime({ offset: true }).optional(),
+  end: z.string().datetime({ offset: true }).optional(),
+});
+
+export const interactionsListQuerySchemaAI = z.object({
+  limit: z.number().int().min(1).max(100).optional(),
+  offset: z.number().int().min(0).optional(),
+  type: interactionTypeEnum.optional(),
+  contact_id: z.string().uuid().optional(),
+  start: z.string().datetime({ offset: true }).optional(),
+  end: z.string().datetime({ offset: true }).optional(),
+});
