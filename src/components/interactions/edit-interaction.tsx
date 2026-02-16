@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Save } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -15,14 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField } from "@/components/ui/formField";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -50,17 +42,17 @@ type Interaction = {
 
 export default function EditInteraction({ id }: { id: string }) {
   const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [contactsError, setContactsError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<InteractionCreateInput>({
     resolver: zodResolver(interactionCreateSchema),
     defaultValues: {
       contact_id: "",
-      interaction_date: new Date().toISOString().slice(0, 10),
+      interaction_date: "",
       type: "call",
       notes: "",
       location: null,
@@ -69,7 +61,7 @@ export default function EditInteraction({ id }: { id: string }) {
   });
 
   const contactOptions = useMemo(() => {
-    return (contacts ?? []).map((c) => ({
+    return contacts.map((c) => ({
       id: c.id,
       label:
         `${c.fname ?? ""} ${c.lname ?? ""}`.trim() ||
@@ -81,34 +73,38 @@ export default function EditInteraction({ id }: { id: string }) {
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
+    async function load() {
       try {
         setLoading(true);
+        setError(null);
 
-        const [iRes, cRes] = await Promise.all([
+        if (!id) {
+          throw new Error("Invalid interaction id");
+        }
+
+        const [interactionRes, contactsRes] = await Promise.all([
           fetch(`/api/interactions/${id}`, { credentials: "include" }),
           fetch(`/api/contacts?limit=100&offset=0`, { credentials: "include" }),
         ]);
 
-        if (!iRes.ok) {
-          const t = await iRes.text().catch(() => "");
-          throw new Error(`Failed to load interaction (${iRes.status}): ${t}`);
-        }
-        const iJson = await iRes.json();
-        const interaction: Interaction = iJson?.interaction;
+        const interactionJson = await interactionRes.json().catch(() => null);
 
-        if (!cRes.ok) {
-          const t = await cRes.text().catch(() => "");
-          throw new Error(`Failed to load contacts (${cRes.status}): ${t}`);
+        if (!interactionRes.ok || !interactionJson?.interaction) {
+          const msg =
+            typeof interactionJson?.error === "string"
+              ? interactionJson.error
+              : "Failed to load interaction";
+          throw new Error(msg);
         }
-        const cJson = await cRes.json();
-        const list: Contact[] = Array.isArray(cJson?.data)
-          ? cJson.data
-          : Array.isArray(cJson?.contacts)
-          ? cJson.contacts
-          : Array.isArray(cJson)
-          ? cJson
-          : [];
+
+        const interaction: Interaction = interactionJson.interaction;
+
+        const contactsJson = await contactsRes.json().catch(() => null);
+        const list: Contact[] = Array.isArray(contactsJson?.data)
+          ? contactsJson.data
+          : Array.isArray(contactsJson)
+            ? contactsJson
+            : [];
 
         if (cancelled) return;
 
@@ -124,17 +120,18 @@ export default function EditInteraction({ id }: { id: string }) {
         });
       } catch (e: any) {
         if (!cancelled) {
-          setContactsError(e?.message ?? "Failed to load data");
+          setError(e.message ?? "Failed to load interaction");
         }
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    }
 
+    load();
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, form]);
 
   async function onSubmit(values: InteractionCreateInput) {
     setSubmitting(true);
@@ -145,131 +142,130 @@ export default function EditInteraction({ id }: { id: string }) {
         credentials: "include",
         body: JSON.stringify({
           ...values,
-          location: values.location ? values.location : null,
+          location: values.location || null,
           duration_minutes:
-            values.duration_minutes === null || values.duration_minutes === undefined
+            values.duration_minutes === null
               ? null
               : Number(values.duration_minutes),
         }),
       });
 
       if (!res.ok) {
-        const txt = await res.text().catch(() => "");
-        throw new Error(`Update failed (${res.status}): ${txt}`);
+        const t = await res.text().catch(() => "");
+        throw new Error(t || "Update failed");
       }
 
       router.push("/interactions");
       router.refresh();
     } catch (e: any) {
-      alert(e?.message ?? "Update failed");
+      alert(e.message ?? "Update failed");
     } finally {
       setSubmitting(false);
     }
   }
 
+  if (loading) {
+    return <p className="text-sm text-neutral-700">Loading...</p>;
+  }
+
+  if (error) {
+    return <p className="text-sm text-rose-600">{error}</p>;
+  }
+
   return (
-    <Card className="shadow-lg border-muted/50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Save className="h-5 w-5 text-primary" />
-          Edit Interaction
-        </CardTitle>
-        <CardDescription>Update your interaction details.</CardDescription>
-      </CardHeader>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <FormField
+        id="contact_id"
+        label="Contact"
+        error={form.formState.errors.contact_id}
+      >
+        <Select
+          value={form.watch("contact_id") || "_"}
+          onValueChange={(v) => form.setValue("contact_id", v === "_" ? "" : v)}
+        >
+          <SelectTrigger className="w-full bg-white/50">
+            <SelectValue placeholder="Select a contact" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_">Select a contact</SelectItem>
+            {contactOptions.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </FormField>
 
-      {loading ? (
-        <CardContent className="py-10 text-sm text-muted-foreground">Loading...</CardContent>
-      ) : contactsError ? (
-        <CardContent className="py-10 text-sm text-red-500">{contactsError}</CardContent>
-      ) : (
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <FormField id="contact_id" label="Contact" error={form.formState.errors.contact_id}>
-              <Select
-                value={form.watch("contact_id") || "_"}
-                onValueChange={(v) => form.setValue("contact_id", v === "_" ? "" : v)}
-              >
-                <SelectTrigger id="contact_id" className="w-full">
-                  <SelectValue placeholder="Select a contact" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_">Select a contact</SelectItem>
-                  {contactOptions.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField id="interaction_date" label="Date" error={form.formState.errors.interaction_date}>
+          <Input type="date" className="bg-white/50" {...form.register("interaction_date")} />
+        </FormField>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField id="interaction_date" label="Date" error={form.formState.errors.interaction_date}>
-                <Input id="interaction_date" type="date" {...form.register("interaction_date")} />
-              </FormField>
+        <FormField id="type" label="Type" error={form.formState.errors.type}>
+          <Select
+            value={form.watch("type")}
+            onValueChange={(v) => form.setValue("type", v as any)}
+          >
+            <SelectTrigger className="bg-white/50">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="call">Call</SelectItem>
+              <SelectItem value="meeting">Meeting</SelectItem>
+              <SelectItem value="email">Email</SelectItem>
+              <SelectItem value="text">Text</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
 
-              <FormField id="type" label="Type" error={form.formState.errors.type}>
-                <Select value={form.watch("type")} onValueChange={(v) => form.setValue("type", v as any)}>
-                  <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="meeting">Meeting</SelectItem>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="text">Text</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
+        <FormField id="location" label="Location (optional)" error={form.formState.errors.location}>
+          <Input className="bg-white/50" {...form.register("location")} />
+        </FormField>
 
-              <FormField id="location" label="Location (optional)" error={form.formState.errors.location}>
-                <Input id="location" placeholder="Office, Café, Zoom..." {...form.register("location")} />
-              </FormField>
+        <FormField id="duration_minutes" label="Duration (minutes)" error={form.formState.errors.duration_minutes}>
+          <Input
+            type="number"
+            min={0}
+            className="bg-white/50"
+            value={form.watch("duration_minutes") ?? ""}
+            onChange={(e) =>
+              form.setValue(
+                "duration_minutes",
+                e.target.value === "" ? null : Number(e.target.value)
+              )
+            }
+          />
+        </FormField>
+      </div>
 
-              <FormField id="duration_minutes" label="Duration (minutes, optional)" error={form.formState.errors.duration_minutes}>
-                <Input
-                  id="duration_minutes"
-                  type="number"
-                  min={0}
-                  placeholder="30"
-                  value={form.watch("duration_minutes") ?? ""}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    form.setValue("duration_minutes", v === "" ? null : Number(v));
-                  }}
-                />
-              </FormField>
-            </div>
+      <FormField id="notes" label="Notes" error={form.formState.errors.notes}>
+        <Textarea className="resize-none min-h-[120px] bg-white/50" {...form.register("notes")} />
+      </FormField>
 
-            <FormField id="notes" label="Notes" error={form.formState.errors.notes}>
-              <Textarea
-                id="notes"
-                placeholder="What did you talk about? Any follow-up?"
-                className="resize-none"
-                {...form.register("notes")}
-              />
-            </FormField>
-          </CardContent>
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-neutral-200">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="w-full sm:w-auto font-medium"
+        >
+          Cancel
+        </Button>
 
-          <CardFooter className="flex justify-between border-t mt-4 p-6 bg-muted/40">
-            <Button type="button" variant="ghost" onClick={() => router.back()} disabled={submitting}>
-              Cancel
-            </Button>
-
-            <Button type="submit" disabled={submitting} className="min-w-32">
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </Button>
-          </CardFooter>
-        </form>
-      )}
-    </Card>
+        <Button type="submit" disabled={submitting} className="w-full sm:w-auto min-w-32 font-bold">
+          {submitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }

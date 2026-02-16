@@ -1,26 +1,17 @@
 "use client";
 
-import { z } from "zod";  
-import { contactCreateSchema, contactUpdateSchema } from "@/lib/validation/contact.schema" ;
+import { z } from "zod";
+import { contactCreateSchema } from "@/lib/validation/contact.schema";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, Save } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from 'next/navigation'
 
-// shadcn/ui components
+// UI
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -30,17 +21,19 @@ import {
 } from "@/components/ui/select";
 import { FormField } from "../ui/formField";
 
+
 export type ContactFormData = z.infer<typeof contactCreateSchema>;
 
 export default function ContactForm({
   initialData,
   contactId,
 }: {
-  initialData?: any,
+  initialData?: any;
   contactId?: string;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactCreateSchema),
     defaultValues: {
@@ -71,11 +64,14 @@ export default function ContactForm({
 
   async function handleDelete() {
     setSubmitting(true);
-    const confirmed = window.confirm("Are you sure you want to delete this contact?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this contact?"
+    );
     if (!confirmed) {
       setSubmitting(false);
       return;
     }
+
     try {
       const res = await fetch(`/api/contacts/${contactId}`, {
         method: "DELETE",
@@ -83,7 +79,7 @@ export default function ContactForm({
       });
 
       if (!res.ok) {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         throw new Error(err.error ?? "Failed to delete contact");
       }
 
@@ -107,17 +103,21 @@ export default function ContactForm({
       const res = await fetch(url, {
         method,
         body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
 
       if (!res.ok) {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         console.error("[ContactForm] Submit error:", err);
-        throw new Error(err.error ?? (res.status === 401 ? "Unauthorized: Please login again" : "Failed to submit contact"));
+        throw new Error(
+          err.error ??
+          (res.status === 401
+            ? "Unauthorized: Please login again"
+            : "Failed to submit contact")
+        );
       }
+
       router.push("/dashboard");
       router.refresh();
     } catch (err: any) {
@@ -129,123 +129,169 @@ export default function ContactForm({
   }
 
   return (
-    <Card className="shadow-lg border-muted/50">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {contactId ? (
-            <Save className="h-5 w-5 text-primary" />
-          ) : (
-            <UserPlus className="h-5 w-5 text-primary" />
-          )}
-          {contactId ? "Edit Contact" : "Create New Contact"}
-        </CardTitle>
-        <CardDescription>
-          Fill in the details below to {contactId ? "update" : "add"} your contact in My Circle.
-        </CardDescription>
-      </CardHeader>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* First Name */}
+        <FormField
+          id="fname"
+          label="First Name"
+          error={form.formState.errors.fname}
+        >
+          <Input
+            id="fname"
+            className="bg-white/50"
+            {...form.register("fname")}
+            placeholder="John"
+          />
+        </FormField>
 
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* First Name */}
-                <FormField id="fname" label="First Name" error={form.formState.errors.fname}>
-                    <Input id="fname" {...form.register("fname")} placeholder="John" />
-                </FormField>
+        {/* Last Name */}
+        <FormField
+          id="lname"
+          label="Last Name"
+          error={form.formState.errors.lname}
+        >
+          <Input
+            id="lname"
+            className="bg-white/50"
+            {...form.register("lname")}
+            placeholder="Doe"
+          />
+        </FormField>
 
-              {/* Last Name */}
-                <FormField id="lname" label="Last Name" error={form.formState.errors.lname}>
-                    <Input id="lname" {...form.register("lname")} placeholder="Doe" />
-                </FormField>
+        {/* Email */}
+        <FormField
+          id="email"
+          label="Email"
+          error={form.formState.errors.email}
+        >
+          <Input
+            id="email"
+            className="bg-white/50"
+            {...form.register("email")}
+            placeholder="john@mail.com"
+          />
+        </FormField>
 
-              {/* Email */}
-                <FormField id="email" label="Email" error={form.formState.errors.email}>
-                    <Input id="email" {...form.register("email")} placeholder="john@mail.com" />
-                </FormField>
+        {/* Phone */}
+        <FormField
+          id="phone"
+          label="Phone Number"
+          error={form.formState.errors.phone}
+        >
+          <Input
+            id="phone"
+            className="bg-white/50"
+            {...form.register("phone")}
+            placeholder="+1 (555) 000-0000"
+          />
+        </FormField>
 
-              {/* Phone */}
-                <FormField id="phone" label="Phone Number" error={form.formState.errors.phone}>
-                    <Input id="phone" {...form.register("phone")} placeholder="+1 (555) 000-0000" />
-                </FormField>
+        {/* Relationship */}
+        <FormField
+          id="relationship"
+          label="Relationship"
+          error={form.formState.errors.relationship}
+        >
+          <Select
+            value={form.watch("relationship") ?? "_"}
+            onValueChange={(value) =>
+              form.setValue(
+                "relationship",
+                value === "_"
+                  ? null
+                  : (value as ContactFormData["relationship"])
+              )
+            }
+          >
+            <SelectTrigger id="relationship" className="w-full bg-white/50">
+              <SelectValue placeholder="Select relationship" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_">Select relationship</SelectItem>
+              <SelectItem value="family">Family</SelectItem>
+              <SelectItem value="friend">Friend</SelectItem>
+              <SelectItem value="colleague">Colleague</SelectItem>
+              <SelectItem value="acquaintance">Acquaintance</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
 
-              {/* Relationship */}
-                <FormField
-                    id="relationship"
-                    label="Relationship"
-                    error={form.formState.errors.relationship}
-                >
-                    <Select
-                        value={form.watch("relationship") ?? "_"}
-                        onValueChange={(value) => 
-                            form.setValue(
-                                "relationship",
-                                value === "_" ? null : (value as ContactFormData["relationship"])
-                            )
-                        }
-                    >
-                        <SelectTrigger id="relationship" className="w-full">
-                            <SelectValue placeholder="Select relationship" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="_">Select relationship</SelectItem>
-                            <SelectItem value="family">Family</SelectItem>
-                            <SelectItem value="friend">Friend</SelectItem>
-                            <SelectItem value="colleague">Colleague</SelectItem>
-                            <SelectItem value="acquaintance">Acquaintance</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </FormField>
+        {/* DOB */}
+        <FormField id="dob" label="Birthday" error={form.formState.errors.dob}>
+          <Input
+            id="dob"
+            className="bg-white/50"
+            {...form.register("dob")}
+            placeholder="1990-01-01"
+          />
+        </FormField>
+      </div>
 
-                {/* DOB */}
-                <FormField id="dob" label="Birthday" error={form.formState.errors.dob}>
-                    <Input id="dob" {...form.register("dob")} placeholder="1990-01-01" />
-                </FormField>
-            </div>
+      {/* Notes */}
+      <FormField
+        id="notes"
+        label="Personal Notes"
+        error={form.formState.errors.notes}
+      >
+        <Textarea
+          id="notes"
+          placeholder="How did you meet? Important facts..."
+          className="resize-none min-h-[120px] bg-white/50"
+          {...form.register("notes")}
+        />
+      </FormField>
 
-            {/* Notes */}
-            <FormField id="notes" label="Personal Notes" error={form.formState.errors.notes}>
-                    <Textarea
-                    id="notes"
-                    placeholder="How did you meet? Important facts..."
-                    className="resize-none"
-                    {...form.register("notes")}
-                />
-            </FormField>
-          </CardContent>
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-neutral-200">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => router.back()}
+          disabled={submitting}
+          className="w-full sm:w-auto font-medium"
+        >
+          Cancel
+        </Button>
 
-          <CardFooter className="flex justify-between border-t mt-4 p-6 bg-muted/40">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          {contactId && (
             <Button
               type="button"
-              variant="ghost"
-              onClick={() => router.back()}
+              variant="destructive"
               disabled={submitting}
+              className="w-full sm:w-auto min-w-32"
+              onClick={handleDelete}
             >
-              Cancel
-            </Button>
-            {contactId && (
-                <Button type="button" variant="destructive" disabled={submitting} className="min-w-32" onClick={handleDelete}>
-                    {submitting ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            deleting...
-                        </>
-                    ) : "Delete Contact"}
-                </Button>
-            )}
-            <Button type="submit" disabled={submitting} className="min-w-32">
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  Deleting...
                 </>
-              ) : contactId ? (
-                "Save Changes"
               ) : (
-                "Create Contact"
+                "Delete Contact"
               )}
             </Button>
-          </CardFooter>
-        </form>
-    </Card>
+          )}
+
+          <Button
+            type="submit"
+            disabled={submitting}
+            className="w-full sm:w-auto min-w-32 font-bold bg-[#2D2A7A] hover:bg-[#231f63]"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : contactId ? (
+              "Save Changes"
+            ) : (
+              "Create Contact"
+            )}
+          </Button>
+        </div>
+      </div>
+    </form>
   );
 }

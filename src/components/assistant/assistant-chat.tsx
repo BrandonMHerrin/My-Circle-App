@@ -215,6 +215,55 @@ export default function AssistantChat({ onClose }: AssistantChatProps) {
           role: "assistant",
           content: "Oops 😅 something went wrong."
         }
+  role: "assistant" | "user";
+  content: string;
+  actions?: Action[];
+};
+
+export default function AssistantChat() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      content: "Hi Alejandro 👋 I'm your assistant. Want help planning your week?",
+      actions: [
+        { type: "intent", label: "Create reminder", intent: "create_reminder" },
+        { type: "intent", label: "Add contact", intent: "create_contact" },
+      ],
+    },
+  ]);
+
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function sendMessage(text: string) {
+    if (!text.trim()) return;
+
+    const userMessage: Message = { role: "user", content: text.trim() };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/assistant/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text.trim() }),
+      });
+
+      const data = await res.json();
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.message ?? "Got it.",
+          actions: (data.actions ?? []) as Action[],
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Oops 😅 something went wrong." },
       ]);
     } finally {
       setLoading(false);

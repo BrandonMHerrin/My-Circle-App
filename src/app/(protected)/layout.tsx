@@ -5,6 +5,8 @@ import AssistantChat from "@/components/assistant/assistant-chat";
 import { Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { NotebookShell } from "@/components/notebook/notebook-shell";
+
 export default function ProtectedLayout({
   children,
 }: Readonly<{
